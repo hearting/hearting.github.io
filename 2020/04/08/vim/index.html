@@ -883,6 +883,30 @@ ddp              # 相邻行交换位置，先 dd 再 p
 
 
 
+   
+   
+   
+   
+   <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+   <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+   
+       <script type="text/javascript">
+           function ShowGitment(){
+               document.getElementById("gitment-display-button").style.display = "none";
+               document.getElementById("gitment-container").style.display = "block";
+               var gitment = new Gitment({
+                   id: document.location.href, 
+                   owner: 'hearting',
+                   repo: 'blog',
+                   oauth: {
+                       client_id: '1c9840ee33161d96334a548f3179d63090f35624c3f746583e9612f72f80d9fd',
+                       client_secret: 'eb467f87bfca430e97709040d83fdde9ea0bb8513ae28ff57e8e4d0e2abccccd',
+                   }});
+               gitment.render('gitment-container');
+           }
+       </script>
+   
+
   
 
   
