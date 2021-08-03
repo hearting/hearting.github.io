@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="使用HDFS的Java接口进行文件的读写。 使用HDFSAPI上传文件至集群 删除HDFS中的文件和文件夹      使用HDFS的Java接口进行文件的读写。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用HDFS的Java接口对文件进行操作">
+<meta property="og:url" content="http://yoursite.com/2020/04/08/HDFS/index.html">
+<meta property="og:site_name" content="Hearting&#39;s Blog">
+<meta property="og:description" content="使用HDFS的Java接口进行文件的读写。 使用HDFSAPI上传文件至集群 删除HDFS中的文件和文件夹      使用HDFS的Java接口进行文件的读写。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200408172005292.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="article:published_time" content="2020-04-08T09:15:59.000Z">
+<meta property="article:modified_time" content="2020-04-09T02:59:31.812Z">
+<meta property="article:author" content="pengwengao">
+<meta property="article:tag" content="BigData">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200408172005292.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+
+<link rel="canonical" href="http://yoursite.com/2020/04/08/HDFS/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>使用HDFS的Java接口对文件进行操作 | Hearting's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta custom-logo">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hearting's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <a>
+        <img class="custom-logo-image" src="/uploads/custom-logo.jpg" alt="Hearting's Blog">
+      </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/hearting" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/08/HDFS/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="pengwengao">
+      <meta itemprop="description" content="个人学习网站">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hearting's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用HDFS的Java接口对文件进行操作
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-08 17:15:59" itemprop="dateCreated datePublished" datetime="2020-04-08T17:15:59+08:00">2020-04-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-04-09 10:59:31" itemprop="dateModified" datetime="2020-04-09T10:59:31+08:00">2020-04-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/BigData/" itemprop="url" rel="index"><span itemprop="name">BigData</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/04/08/HDFS/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/04/08/HDFS/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>6.8k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>6 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <div class="toc">
+
+<!-- toc -->
+
+<ul>
+<li><a href="#shi-yong-hdfs-de-java-jie-kou-jin-xing-wen-jian-de-du-xie">使用HDFS的Java接口进行文件的读写。</a></li>
+<li><a href="#shi-yong-hdfsapi-shang-chuan-wen-jian-zhi-ji-qun">使用HDFSAPI上传文件至集群</a></li>
+<li><a href="#shan-chu-hdfs-zhong-de-wen-jian-he-wen-jian-jia">删除HDFS中的文件和文件夹</a></li>
+</ul>
+<!-- tocstop -->
+
+</div>
+
+<h2><span id="shi-yong-hdfs-de-java-jie-kou-jin-xing-wen-jian-de-du-xie">使用HDFS的Java接口进行文件的读写。</span><a href="#shi-yong-hdfs-de-java-jie-kou-jin-xing-wen-jian-de-du-xie" class="header-anchor">#</a></h2><a id="more"></a>
+
+<p><img src="https://img-blog.csdnimg.cn/20200408172005292.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt></p>
+<p>FileSystem对象<br>要从Hadoop文件系统中读取文件，最简单的办法是使用java.net.URL对象打开数据流，从中获取数据。不过这种方法一般要使用FsUrlStreamHandlerFactory实例调用setURLStreamHandlerFactory()方法。不过每个Java虚拟机只能调用一次这个方法，所以如果其他第三方程序声明了这个对象，那我们将无法使用了。因为有时候我们不能在程序中设置URLStreamHandlerFactory实例，这个时候咱们就可以使用FileSystem API来打开一个输入流，进而对HDFS进行操作。</p>
+<p>使用FileSystem，查看上传的文件。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">public sattic void main(String[] args)&#123;</span><br><span class="line">    URI uri &#x3D; URI.create(&quot;hdfs:&#x2F;&#x2F;localhost:9000&#x2F;user&#x2F;tmp&#x2F;test.txt&quot;);</span><br><span class="line">    Configuration config &#x3D; new Configuration();</span><br><span class="line">    FileSystem fs &#x3D; FileSystem.get(uri, config);</span><br><span class="line">    InputStream in &#x3D; null;</span><br><span class="line">    try &#123;</span><br><span class="line">        in &#x3D; fs.open(new Path(uri));</span><br><span class="line">        IOUtils.copyBytes(in, System.out, 2048, false);</span><br><span class="line">    &#125; catch (Exception e) &#123;</span><br><span class="line">        IOUtils.closeStream(in);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>FileSystem是一个通用的文件系统API，FileSystem实例有下列几个静态工厂方法用来构造对象。</p>
+<p>public static FileSystem get(Configuration conf)throws IOException</p>
+<p>public static FileSystem get(URI uri,Configuration conf)throws IOException</p>
+<p>public static FileSystem get(URI uri,Configuration conf,String user)throws IOException</p>
+<p>Configuration对象封装了客户端或服务器的配置，通过设置配置文件读取类路径来实现（如：/etc/hadoop/core-site.xml）。</p>
+<p>第一个方法返回的默认文件系统是在core-site.xml中指定的，如果没有指定，就使用默认的文件系统。<br>第二个方法使用给定的URI方案和权限来确定要使用的文件系统，如果给定URI中没有指定方案，则返回默认文件系统，<br>第三个方法作为给定用户来返回文件系统，这个在安全方面来说非常重要。</p>
+<p>FSDataInputStream对象<br>实际上，FileSystem对象中的open()方法返回的就是FSDataInputStream对象，而不是标准的java.io类对象。这个类是继承了java.io.DataInputStream的一个特殊类，并支持随机访问，由此可以从流的任意位置读取数据。</p>
+<p>在有了FileSystem实例之后，我们调用open()函数来获取文件的输入流。</p>
+<p>public FSDataInputStream open(Path p)throws IOException<br>public abst\fract FSDataInputStream open(Path f,int bufferSize)throws IOException<br>第一个方法使用默认的缓冲区大小为4KB。</p>
+<p>示例代码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">import java.io.IOException;</span><br><span class="line">import java.io.InputStream;</span><br><span class="line">import java.net.URI;</span><br><span class="line">import org.apache.hadoop.conf.Configuration;</span><br><span class="line">import org.apache.hadoop.fs.FileSystem;</span><br><span class="line">import org.apache.hadoop.fs.Path;</span><br><span class="line">import org.apache.hadoop.io.IOUtils;</span><br><span class="line">public class FileSystemCat &#123;</span><br><span class="line">	public static void main(String[] args) throws Exception&#123;</span><br><span class="line">		URI uri &#x3D; URI.create(&quot;hdfs:&#x2F;&#x2F;localhost:9000&#x2F;user&#x2F;tmp&#x2F;test.txt&quot;);</span><br><span class="line">    Configuration config &#x3D; new Configuration();</span><br><span class="line">    FileSystem fs &#x3D; FileSystem.get(uri, config);</span><br><span class="line">    InputStream in &#x3D; null;</span><br><span class="line">    try &#123;</span><br><span class="line">        in &#x3D; fs.open(new Path(uri));</span><br><span class="line">        IOUtils.copyBytes(in, System.out, 2048, false);</span><br><span class="line">    &#125; catch (Exception e) &#123;</span><br><span class="line">        IOUtils.closeStream(in);</span><br><span class="line">    &#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2><span id="shi-yong-hdfsapi-shang-chuan-wen-jian-zhi-ji-qun">使用HDFSAPI上传文件至集群</span><a href="#shi-yong-hdfsapi-shang-chuan-wen-jian-zhi-ji-qun" class="header-anchor">#</a></h2><p>FSDataOutputStream对象</p>
+<p>Java中要将数据输出到终端，需要文件输出流，HDFS的JavaAPI中也有类似的对象。</p>
+<p>FileSystem类有一系列新建文件的方法，最简单的方法是给准备新建的文件制定一个path对象，然后返回一个用于写入数据的输出流：</p>
+<p>public FSDataOutputStream create(Path p)throws IOException</p>
+<p>该方法有很多重载方法，允许我们指定是否需要强制覆盖现有文件，文件备份数量，写入文件时所用缓冲区大小，文件块大小以及文件权限。</p>
+<p>注意：create()方法能够为需要写入且当前不存在的目录创建父目录，即就算传入的路径是不存在的，该方法也会为你创建一个目录，而不会报错。如果有时候我们并不希望它这么做，可以先用exists()方法先判断目录是否存在。</p>
+<p>在写入数据的时候经常想要知道当前的进度，API也提供了一个Progressable用于传递回调接口，这样我们就可以很方便的将写入datanode的进度通知给应用了。</p>
+<p>package org.apache.hadoop.util;<br>public interface Progressable{<br>    public void progress();<br>}</p>
+<p>IOUtils.copyBytes(in, out, 4096, false)方法实现了文件合并及上传至hdfs上<br>IOUtils.copyBytes(in, out, 4096, false)<br>–in:是FSDataInputStream类的对象，是有关读取文件的类，也就是所谓“输入流”<br>–out:是FSDataOutputStream类的对象，是有关文件写入的类，也就是“输出流”<br>–4096表示用来拷贝的buffer大小（buffer是缓冲区）–缓冲区大小  </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">import java.io.BufferedInputStream;</span><br><span class="line">import java.io.FileInputStream;</span><br><span class="line">import java.io.FileNotFoundException;</span><br><span class="line">import java.io.IOException;</span><br><span class="line">import java.io.InputStream;</span><br><span class="line">import java.net.URI;</span><br><span class="line">import java.io.File;</span><br><span class="line">import org.apache.hadoop.conf.Configuration;</span><br><span class="line">import org.apache.hadoop.fs.FSDataOutputStream;</span><br><span class="line">import org.apache.hadoop.fs.FileSystem;</span><br><span class="line">import org.apache.hadoop.fs.Path;</span><br><span class="line">import org.apache.hadoop.io.IOUtils;</span><br><span class="line">import org.apache.hadoop.util.Progressable;</span><br><span class="line">public class FileSystemUpload &#123;	</span><br><span class="line">	public static void main(String[] args) throws IOException &#123;</span><br><span class="line">		&#x2F;&#x2F;请在 Begin-End 之间添加代码，完成任务要求。</span><br><span class="line">        &#x2F;********* Begin *********&#x2F;</span><br><span class="line">		File localPath&#x3D;new File(&quot;&#x2F;develop&#x2F;test.txt&quot;);</span><br><span class="line">		String hdfsPath &#x3D;&quot;hdfs:&#x2F;&#x2F;localhost:9000&#x2F;user&#x2F;hadoop&#x2F;test.txt&quot;;</span><br><span class="line">		InputStream in&#x3D;new BufferedInputStream(new FileInputStream(localPath));</span><br><span class="line">		&#x2F;&#x2F;获取输入流对象</span><br><span class="line">		Configuration config&#x3D;new Configuration();</span><br><span class="line">		FileSystem fs&#x3D;FileSystem.get(URI.create(hdfsPath),config);</span><br><span class="line">		long fileSize&#x3D;localPath.length() &gt; 65536 ? localPath.length()&#x2F;65536 :1;</span><br><span class="line">		&#x2F;&#x2F;待上传文件大小</span><br><span class="line">		FSDataOutputStream out &#x3D;fs.create(new Path(hdfsPath),new Progressable()&#123;</span><br><span class="line">		&#x2F;&#x2F;方法在每次上传了64KB字节大小的文件之后会自动调用一次</span><br><span class="line">			long fileCount&#x3D;0;</span><br><span class="line">			public void progress()&#123;</span><br><span class="line">				System.out.println(&quot;总进度&quot;+(fileCount&#x2F;fileSize)*100+&quot;%&quot;);</span><br><span class="line">				fileCount++;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;);</span><br><span class="line">	IOUtils.copyBytes(in,out,2048,true);&#x2F;&#x2F;最后一个参数的意思是使用完之后是否关闭流</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2><span id="shan-chu-hdfs-zhong-de-wen-jian-he-wen-jian-jia">删除HDFS中的文件和文件夹</span><a href="#shan-chu-hdfs-zhong-de-wen-jian-he-wen-jian-jia" class="header-anchor">#</a></h2><p>列出文件<br>我们在开发或者维护系统时，经常会需要列出目录的内容，在HDFS的API中就提供了listStatus()方法来实现该功能。</p>
+<p>public FileStatus[] listStatus(Path f)throws IOException</p>
+<p>public FileStatus[] listStatus(Path f,PathFilter filter)throws IOException</p>
+<p>public FileStatus listStatus(Path[] files)throws IOException</p>
+<p>public FileStatus() listStatus(Path[] files,PathFilter filter)throws IOException</p>
+<p>当传入参数是一个文件时，他会简单的转变成以数组方式返回长度为1的FileStatus对象，当传入参数是一个目录时，则返回0或多个FileStatus对象，表示此目录中包含的文件和目录。</p>
+<p>listStatus()方法的使用：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">public static void main（String]args）throws IOException &#123;</span><br><span class="line">string uri &#x3D;&quot;hdfs:&#x2F;&#x2F;localhost：9000&#x2F;&quot;；&#x2F;&#x2F;HDFS根目录</span><br><span class="line">string path1 &#x3D;&quot;hdfs:&#x2F;&#x2F;localhost：9000&#x2F;user&quot;；</span><br><span class="line">Configuration config &#x3D; new Configuration（）；</span><br><span class="line">FileSystem fs &#x3D; FileSystem.get（URI.create（uri），config）；</span><br><span class="line">Path[]paths &#x3D;&#123;new Path（uri），new Path（path1）&#125;；&#x2F;&#x2F;构建要显示目录的数组</span><br><span class="line">Filestatus[1 status &#x3D; fs.liststatus（paths）；</span><br><span class="line">Path[]listPaths &#x3D; Fileutil.stat2Paths（status）；</span><br><span class="line">for（Path path：listPaths）&#123;</span><br><span class="line">system.out.println（path）：</span><br></pre></td></tr></table></figure>
+
+<p>删除文件<br>使用FileSystem的delete()方法可以永久性删除文件或目录。</p>
+<p>public boolean delete(Path f,boolean recursive)throws IOException</p>
+<p>如果f是一个文件或者空目录，那么recursive的值可以忽略，当recursize的值为true，并且p是一个非空目录时，非空目录及其内容才会被删除（否则将会抛出IOException异常）。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">import java.io.IOException;</span><br><span class="line">import java.net.URI;</span><br><span class="line">import org.apache.hadoop.conf.Configuration;</span><br><span class="line">import org.apache.hadoop.fs.FileStatus;</span><br><span class="line">import org.apache.hadoop.fs.FileSystem;</span><br><span class="line">import org.apache.hadoop.fs.FileUtil;</span><br><span class="line">import org.apache.hadoop.fs.Path;</span><br><span class="line">public class FileSystemDelete &#123;</span><br><span class="line">	</span><br><span class="line">	public static void main(String[] args) throws IOException &#123;</span><br><span class="line">		String uri&#x3D;&quot;hdfs:&#x2F;&#x2F;localhost:9000&#x2F;&quot;;</span><br><span class="line">		String path3&#x3D;&quot;hdfs:&#x2F;&#x2F;localhost:9000&#x2F;user&quot;;</span><br><span class="line">		String path2&#x3D;&quot;hdfs:&#x2F;&#x2F;localhost:9000&#x2F;user&#x2F;hadoop&quot;;</span><br><span class="line">		String path1&#x3D;&quot;hdfs:&#x2F;&#x2F;localhost:9000&#x2F;user&#x2F;tmp&quot;;</span><br><span class="line">		Configuration config&#x3D;new Configuration();</span><br><span class="line">		FileSystem fs&#x3D;FileSystem.get(URI.create(uri),config);</span><br><span class="line">		fs.delete(new Path(path2),true);&#x2F;&#x2F;删除</span><br><span class="line">		fs.delete(new Path(path3),true);&#x2F;&#x2F;删除</span><br><span class="line">		Path[] paths&#x3D;&#123;new Path(uri),new Path(path1)&#125;;</span><br><span class="line">		FileStatus[] status&#x3D;fs.listStatus(paths);</span><br><span class="line">		Path[] listPaths&#x3D;FileUtil.stat2Paths(status);</span><br><span class="line">		for (Path path:listPaths)&#123;</span><br><span class="line">			System.out.println(path);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/BigData/" rel="tag"><i class="fa fa-tag"></i> BigData</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/08/hadoop_setup/" rel="prev" title="安装配置Hadoop开发环境">
+      <i class="fa fa-chevron-left"></i> 安装配置Hadoop开发环境
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/04/08/Linux_FileFlat/" rel="next" title="Linux目录结构">
+      Linux目录结构 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">1.</span> <span class="nav-text">使用HDFS的Java接口进行文件的读写。</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">2.</span> <span class="nav-text">使用HDFSAPI上传文件至集群</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">3.</span> <span class="nav-text">删除HDFS中的文件和文件夹</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pengwengao"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">pengwengao</p>
+  <div class="site-description" itemprop="description">个人学习网站</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hearting" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hearting" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1077453259@qq.com" title="E-Mail → mailto:1077453259@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/yourname" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;yourname" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://www.zhihu.com/people/mr%E5%BD%AD44" title="知乎 → http:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;mr彭44" rel="noopener" target="_blank"><i class="fab fa-zhihu fa-fw"></i>知乎</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_42112448" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_42112448" rel="noopener" target="_blank">CSDN</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://gitee.com/pwg123_admin" title="https:&#x2F;&#x2F;gitee.com&#x2F;pwg123_admin" rel="noopener" target="_blank">Gitee</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pengwengao</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">135k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:03</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script size="300" alpha="0.6" zIndex="-1" src="/lib/canvas-ribbon/canvas-ribbon.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/three-waves.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+    <script defer src="/lib/three/canvas_sphere.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+   
+   
+   
+   <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+   <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+   
+       <script type="text/javascript">
+           function ShowGitment(){
+               document.getElementById("gitment-display-button").style.display = "none";
+               document.getElementById("gitment-container").style.display = "block";
+               var gitment = new Gitment({
+                   id: document.location.href, 
+                   owner: 'pwg123_admin',
+                   repo: 'blog',
+                   oauth: {
+                       client_id: '1c9840ee33161d96334a548f3179d63090f35624c3f746583e9612f72f80d9fd',
+                       client_secret: 'eb467f87bfca430e97709040d83fdde9ea0bb8513ae28ff57e8e4d0e2abccccd',
+                   }});
+               gitment.render('gitment-container');
+           }
+       </script>
+   
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'CEyBRxfkOzGDbJCqTlKOPUuQ-gzGzoHsz',
+      appKey     : 'c4KiJ36SEUjjMQbeKpfESY5j',
+      placeholder: "欢迎畅所欲言",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+
+</body>
+</html>
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/click.js"></script>

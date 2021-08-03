@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="SpringBoot简介 先来介绍一下Spring Springboot特点   在ideal中搭建springboot工程 pom.xml解读   Springboot整合ssm SpringMvc和Mybatis简介 SpringBoot支持两种格式的配置文件properties和yml格式. 工程搭建步骤   SpringBoot整合Thymeleaf Thymeleaf简介 整合">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SpringBoot最快速使用入门">
+<meta property="og:url" content="http://yoursite.com/2020/08/01/SpringBoot%E6%9C%80%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%E5%85%A5%E9%97%A8/index.html">
+<meta property="og:site_name" content="Hearting&#39;s Blog">
+<meta property="og:description" content="SpringBoot简介 先来介绍一下Spring Springboot特点   在ideal中搭建springboot工程 pom.xml解读   Springboot整合ssm SpringMvc和Mybatis简介 SpringBoot支持两种格式的配置文件properties和yml格式. 工程搭建步骤   SpringBoot整合Thymeleaf Thymeleaf简介 整合">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/2020073123000681.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200731232336252.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200731232405791.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200731232422583.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/2020073123244441.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200731232555279.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200731232933769.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200801000416513.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="article:published_time" content="2020-08-01T14:16:25.000Z">
+<meta property="article:modified_time" content="2020-08-01T14:17:02.471Z">
+<meta property="article:author" content="pengwengao">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/2020073123000681.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+
+<link rel="canonical" href="http://yoursite.com/2020/08/01/SpringBoot%E6%9C%80%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%E5%85%A5%E9%97%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>SpringBoot最快速使用入门 | Hearting's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta custom-logo">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hearting's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <a>
+        <img class="custom-logo-image" src="/uploads/custom-logo.jpg" alt="Hearting's Blog">
+      </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/hearting" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/01/SpringBoot%E6%9C%80%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%E5%85%A5%E9%97%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="pengwengao">
+      <meta itemprop="description" content="个人学习网站">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hearting's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          SpringBoot最快速使用入门
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-01 22:16:25 / 修改时间：22:17:02" itemprop="dateCreated datePublished" datetime="2020-08-01T22:16:25+08:00">2020-08-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/08/01/SpringBoot%E6%9C%80%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%E5%85%A5%E9%97%A8/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/08/01/SpringBoot%E6%9C%80%E5%BF%AB%E9%80%9F%E4%BD%BF%E7%94%A8%E5%85%A5%E9%97%A8/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>9.3k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>8 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <div class="toc">
+
+<!-- toc -->
+
+<ul>
+<li><a href="#springboot-jian-jie">SpringBoot简介</a><ul>
+<li><a href="#xian-lai-jie-shao-yi-xia-spring">先来介绍一下Spring</a></li>
+<li><a href="#springboot-te-dian">Springboot特点</a></li>
+</ul>
+</li>
+<li><a href="#zai-ideal-zhong-da-jian-springboot-gong-cheng">在ideal中搭建springboot工程</a><ul>
+<li><a href="#pom-xml-jie-du">pom.xml解读</a></li>
+</ul>
+</li>
+<li><a href="#springboot-zheng-he-ssm">Springboot整合ssm</a><ul>
+<li><a href="#springmvc-he-mybatis-jian-jie">SpringMvc和Mybatis简介</a></li>
+<li><a href="#springboot-zhi-chi-liang-chong-ge-shi-de-pei-zhi-wen-jian-properties-he-yml-ge-shi">SpringBoot支持两种格式的配置文件properties和yml格式.</a></li>
+<li><a href="#gong-cheng-da-jian-bu-zou">工程搭建步骤</a></li>
+</ul>
+</li>
+<li><a href="#springboot-zheng-he-thymeleaf">SpringBoot整合Thymeleaf</a><ul>
+<li><a href="#thymeleaf-jian-jie">Thymeleaf简介</a></li>
+<li><a href="#zheng-he-dao-spring-boot-bu-zou"><strong>整合到Spring boot步骤:</strong></a></li>
+<li><a href="#thymeleaf-ji-ben-yu-fa">Thymeleaf基本语法</a></li>
+</ul>
+</li>
+</ul>
+<!-- tocstop -->
+
+</div>
+
+<a id="more"></a>
+
+<h2><span id="springboot-jian-jie">SpringBoot简介</span><a href="#springboot-jian-jie" class="header-anchor">#</a></h2><h3><span id="xian-lai-jie-shao-yi-xia-spring">先来介绍一下Spring</span><a href="#xian-lai-jie-shao-yi-xia-spring" class="header-anchor">#</a></h3><p>Spring 诞生于2002年， 是个java企业级应用的开源开发框架。Spring主要用来开发Java应用，但是有些扩展是针对构建J2EE平台的web应用。Spring 框架目标是简化Java企业级应用开发，并通过POJO为基础的编程模型促进良好的编程习惯。<br>缺点：<br>虽然Spring框架是轻量级的，但它的配置却是重量级的，jsp中要写很多代码、控制器过于灵活,缺少一个公用控制器。</p>
+<p>Pivotal团队在原有Spring框架的基础上通过注解的方式进一步简化了Spring框架的使用，并基于Spring框架开发了全新的Spring Boot框架，于2014年4月正式推出了Spring Boot 1.0版本，同时在2018年3月又推出了Spring Boot 2.0版本。</p>
+<p>SpringBoot 具有如下优点：</p>
+<ol>
+<li><p>快速创建独立运行的Spring项目以及与主流框架集成、</p>
+</li>
+<li><p>使用嵌入式的Servlet容器，应用无需打成WAR包</p>
+</li>
+<li><p>Starters自动依赖与版本控制</p>
+</li>
+<li><p>大量的自动配置，简化开发，也可修改默认值</p>
+</li>
+<li><p>无需配置XML，无代码生成，开箱即用</p>
+</li>
+<li><p>准生产环境的运行时应用监控</p>
+</li>
+<li><p>与云计算的天然集成<br><img src="https://img-blog.csdnimg.cn/2020073123000681.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt></p>
+<h3><span id="springboot-te-dian">Springboot特点</span><a href="#springboot-te-dian" class="header-anchor">#</a></h3></li>
+<li><p>创快速创建一个web工程</p>
+</li>
+<li><p>内嵌服务器tomcat，打成jar包即可</p>
+</li>
+<li><p>绝对没有代码生成，也无需 XML 配置</p>
+<h2><span id="zai-ideal-zhong-da-jian-springboot-gong-cheng">在ideal中搭建springboot工程</span><a href="#zai-ideal-zhong-da-jian-springboot-gong-cheng" class="header-anchor">#</a></h2><p><img src="https://img-blog.csdnimg.cn/20200731232336252.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt><br><img src="https://img-blog.csdnimg.cn/20200731232405791.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt><br><img src="https://img-blog.csdnimg.cn/20200731232422583.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt="在这里插入图片描述"><br><img src="https://img-blog.csdnimg.cn/2020073123244441.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt><br>工程结构图如下：<br><img src="https://img-blog.csdnimg.cn/20200731232555279.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt></p>
+<h3><span id="pom-xml-jie-du">pom.xml解读</span><a href="#pom-xml-jie-du" class="header-anchor">#</a></h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">&lt;?xml version&#x3D;&quot;1.0&quot; encoding&#x3D;&quot;UTF-8&quot;?&gt;</span><br><span class="line">&lt;project xmlns&#x3D;&quot;http:&#x2F;&#x2F;maven.apache.org&#x2F;POM&#x2F;4.0.0&quot; xmlns:xsi&#x3D;&quot;http:&#x2F;&#x2F;www.w3.org&#x2F;2001&#x2F;XMLSchema-instance&quot;</span><br><span class="line">         xsi:schemaLocation&#x3D;&quot;http:&#x2F;&#x2F;maven.apache.org&#x2F;POM&#x2F;4.0.0 https:&#x2F;&#x2F;maven.apache.org&#x2F;xsd&#x2F;maven-4.0.0.xsd&quot;&gt;</span><br><span class="line">    &lt;modelVersion&gt;4.0.0&lt;&#x2F;modelVersion&gt;</span><br><span class="line">    &lt;!--1.继承一个父工程 starter-parent --&gt;</span><br><span class="line">    &lt;parent&gt;</span><br><span class="line">        &lt;groupId&gt;org.springframework.boot&lt;&#x2F;groupId&gt;</span><br><span class="line">        &lt;artifactId&gt;spring-boot-starter-parent&lt;&#x2F;artifactId&gt;</span><br><span class="line">        &lt;version&gt;2.3.1.RELEASE&lt;&#x2F;version&gt;</span><br><span class="line">        &lt;relativePath&#x2F;&gt; &lt;!-- lookup parent from repository --&gt;</span><br><span class="line">    &lt;&#x2F;parent&gt;</span><br><span class="line"></span><br><span class="line">    &lt;!--2.本工程的信息--&gt;</span><br><span class="line">    &lt;groupId&gt;com.yd&lt;&#x2F;groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;springboot_01&lt;&#x2F;artifactId&gt;</span><br><span class="line">    &lt;version&gt;0.0.1-SNAPSHOT&lt;&#x2F;version&gt;</span><br><span class="line">    &lt;name&gt;springboot_01&lt;&#x2F;name&gt;</span><br><span class="line">    &lt;description&gt;Demo project for Spring Boot&lt;&#x2F;description&gt;</span><br><span class="line"></span><br><span class="line">    &lt;!--3.jdk编译版本--&gt;</span><br><span class="line">    &lt;properties&gt;</span><br><span class="line">        &lt;java.version&gt;1.8&lt;&#x2F;java.version&gt;</span><br><span class="line">    &lt;&#x2F;properties&gt;</span><br><span class="line">    </span><br><span class="line">&lt;!--4.依赖坐标--&gt;</span><br><span class="line">    &lt;dependencies&gt;</span><br><span class="line">        &lt;!--web启动器--&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.springframework.boot&lt;&#x2F;groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;spring-boot-starter-web&lt;&#x2F;artifactId&gt;</span><br><span class="line">        &lt;&#x2F;dependency&gt;</span><br><span class="line">       </span><br><span class="line">        &lt;!--springboot测试环境--&gt;</span><br><span class="line">        &lt;dependency&gt;</span><br><span class="line">            &lt;groupId&gt;org.springframework.boot&lt;&#x2F;groupId&gt;</span><br><span class="line">            &lt;artifactId&gt;spring-boot-starter-test&lt;&#x2F;artifactId&gt;</span><br><span class="line">            &lt;scope&gt;test&lt;&#x2F;scope&gt;</span><br><span class="line">            &lt;exclusions&gt;</span><br><span class="line">                &lt;exclusion&gt;</span><br><span class="line">                    &lt;groupId&gt;org.junit.vintage&lt;&#x2F;groupId&gt;</span><br><span class="line">                    &lt;artifactId&gt;junit-vintage-engine&lt;&#x2F;artifactId&gt;</span><br><span class="line">                &lt;&#x2F;exclusion&gt;</span><br><span class="line">            &lt;&#x2F;exclusions&gt;</span><br><span class="line">        &lt;&#x2F;dependency&gt;</span><br><span class="line"></span><br><span class="line">    &lt;&#x2F;dependencies&gt;</span><br><span class="line"></span><br><span class="line">    &lt;!--测试打包工具--&gt;</span><br><span class="line">    &lt;build&gt;</span><br><span class="line">        &lt;plugins&gt;</span><br><span class="line">            &lt;plugin&gt;</span><br><span class="line">                &lt;groupId&gt;org.springframework.boot&lt;&#x2F;groupId&gt;</span><br><span class="line">                &lt;artifactId&gt;spring-boot-maven-plugin&lt;&#x2F;artifactId&gt;</span><br><span class="line">            &lt;&#x2F;plugin&gt;</span><br><span class="line">        &lt;&#x2F;plugins&gt;</span><br><span class="line">    &lt;&#x2F;build&gt;</span><br><span class="line"></span><br><span class="line">&lt;&#x2F;project&gt;</span><br></pre></td></tr></table></figure>
+<p>启动项目<br><img src="https://img-blog.csdnimg.cn/20200731232933769.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt></p>
+<h2><span id="springboot-zheng-he-ssm">Springboot整合ssm</span><a href="#springboot-zheng-he-ssm" class="header-anchor">#</a></h2><h3><span id="springmvc-he-mybatis-jian-jie">SpringMvc和Mybatis简介</span><a href="#springmvc-he-mybatis-jian-jie" class="header-anchor">#</a></h3></li>
+<li><p>SpringMvc注解介绍</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">@Controller @Service  @Repository 实例化类--创建对象，存入spring容器中,分别作用于Controller层、service层、mapper层</span><br><span class="line">@Autowired  从spring容器中取出对象</span><br><span class="line">@RequestMapping 映射请求路径，相当于@WebServlet</span><br><span class="line">@ResponseBody  响应数据给客户端，相当于 response.getWriter().write()</span><br></pre></td></tr></table></figure></li>
+<li><p>Mybatis简介<br>MyBatis原本是Apache的一个开源项目iBatis，2010年这个项目由ApacheSoftware Foundation迁移到了Google Code，并且改名为MyBatis，实质上，MyBatis是对iBatis进行的一个完善和升级版本。</p>
+<p>MyBatis是一个优秀的持久层框架，是Apache下的顶级项目。它对jdbc的操作数据库的过程进行封装，使开发者只需要关注 SQL 本身，而不需要花费精力去处理例如注册驱动、创建connection、创建statement、手动设置参数、结果集检索等jdbc繁杂的过程代码。</p>
+</li>
+</ol>
+<p>Mybatis通过xml或注解的方式将要执行的各种statement（statement、preparedStatemnt、CallableStatement）配置起来，并通过java对象和statement中的sql进行映射生成最终执行的sql语句，最后由mybatis框架执行sql并将结果映射成java对象并返回。<br>如果使用 Maven 来构建项目，则需将下面的依赖代码置于 pom.xml 文件中：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">  &lt;groupId&gt;org.mybatis&lt;&#x2F;groupId&gt;</span><br><span class="line">  &lt;artifactId&gt;mybatis&lt;&#x2F;artifactId&gt;</span><br><span class="line">  &lt;version&gt;x.x.x&lt;&#x2F;version&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br></pre></td></tr></table></figure>
+<h3><span id="springboot-zhi-chi-liang-chong-ge-shi-de-pei-zhi-wen-jian-properties-he-yml-ge-shi">SpringBoot支持两种格式的配置文件properties和yml格式.</span><a href="#springboot-zhi-chi-liang-chong-ge-shi-de-pei-zhi-wen-jian-properties-he-yml-ge-shi" class="header-anchor">#</a></h3><ul>
+<li>比较两种配置形式,以配置spring数据源为例。</li>
+</ul>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#application.properties </span></span><br><span class="line"><span class="meta">spring.datasource.driver-class-name</span>=<span class="string">com.mysql.jdbc.Driver</span></span><br><span class="line"><span class="meta">spring.datasource.url</span>=<span class="string">jdbc:mysql://localhost:3306/db</span></span><br><span class="line"><span class="meta">spring.datasource.username</span>=<span class="string">root</span></span><br><span class="line"><span class="meta">spring.datasource.password</span>=<span class="string">root</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#application.yml </span></span><br><span class="line"><span class="attr">spring:</span></span><br><span class="line">  <span class="attr">datasource:</span></span><br><span class="line">    <span class="attr">driver-class-name:</span> <span class="string">com.mysql.jdbc.Driver</span></span><br><span class="line">    <span class="attr">url:</span> <span class="string">jdbc:mysql://localhost:3306/db</span></span><br><span class="line">    <span class="attr">username:</span> <span class="string">root</span></span><br><span class="line">    <span class="attr">password:</span> <span class="string">root</span></span><br><span class="line"><span class="comment"># mybatis配置</span></span><br><span class="line"><span class="attr">mybatis:</span></span><br><span class="line">  <span class="comment">#输出sql</span></span><br><span class="line">  <span class="attr">configuration:</span></span><br><span class="line">    <span class="attr">log-impl:</span> <span class="string">org.apache.ibatis.logging.stdout.StdOutImpl</span></span><br></pre></td></tr></table></figure>
+<p>YAML文件格式是Spring Boot支持的一种JSON文件格式，相较于传统的Properties配置文件，YAML文件以数据为核心，是一种更为直观且容易被电脑识别的数据序列化格式。<br>application.yml配置文件的工作原理和application.properties是一样的，只不过yaml格式配置文件看起来更简洁一些。</p>
+<p>application.yml文件使用 “key:（空格）value”格式配置属性，使用缩进控制层级关系。</p>
+<p>yml文件还支持复杂数据类型，例如数组和集合</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#1.数组或单列集合类型</span></span><br><span class="line"><span class="attr">person:</span></span><br><span class="line">	<span class="attr">hobby:</span></span><br><span class="line">		<span class="bullet">-</span> <span class="string">play</span></span><br><span class="line"> 		<span class="bullet">-</span> <span class="string">read</span></span><br><span class="line"> 		<span class="bullet">-</span> <span class="string">sleep</span></span><br><span class="line"><span class="comment">#或者</span></span><br><span class="line"><span class="attr">person:</span></span><br><span class="line">	<span class="attr">hobby:</span></span><br><span class="line"> 		<span class="string">play,</span></span><br><span class="line"> 		<span class="string">read,</span></span><br><span class="line"> 		<span class="string">sleep</span></span><br><span class="line"><span class="comment">#或者如下方式，推荐使用该方式，[]也可以省略 		</span></span><br><span class="line"><span class="attr">person:</span></span><br><span class="line">	<span class="attr">hobby:</span> <span class="string">[play,read,sleep]</span> </span><br><span class="line"></span><br><span class="line"><span class="comment">#2.map集合</span></span><br><span class="line"><span class="attr">person:</span></span><br><span class="line">	<span class="attr">map:</span></span><br><span class="line">		<span class="attr">k1:</span> <span class="string">v1</span></span><br><span class="line">		<span class="attr">k2:</span> <span class="string">v2</span></span><br><span class="line"><span class="comment">#或者使用行内方式		</span></span><br><span class="line"><span class="attr">person:</span></span><br><span class="line">	<span class="attr">map:</span> <span class="string">&#123;k1:</span> <span class="string">v1,k2:</span> <span class="string">v2&#125;</span></span><br></pre></td></tr></table></figure>
+<h3><span id="gong-cheng-da-jian-bu-zou">工程搭建步骤</span><a href="#gong-cheng-da-jian-bu-zou" class="header-anchor">#</a></h3><p>1.导入依赖（mybatis,jdbc,mysql）<br>2.yml中加入数据源配置<br>3.编写mapper接口和方法<br>4.编写controller和方法<br>5.启动类上添加包扫描注解@MapperScan(“com.hp.mapper”)</p>
+<h2><span id="springboot-zheng-he-thymeleaf">SpringBoot整合Thymeleaf</span><a href="#springboot-zheng-he-thymeleaf" class="header-anchor">#</a></h2><h3><span id="thymeleaf-jian-jie">Thymeleaf简介</span><a href="#thymeleaf-jian-jie" class="header-anchor">#</a></h3><p>Thymeleaf是适用于Web和独立环境的现代服务器端Java模板引擎，能够处理HTML，XML，JavaScript，CSS甚至纯文本。<br>Thymeleaf的主要目标是提供一种优雅且高度可维护的模板创建方式。为此，它以自然模板的概念为基础，以不影响模板用作设计原型的方式将其逻辑注入模板文件。这样可以改善设计沟通，并缩小设计团队与开发团队之间的差距。<br>thymeleaf是一个HTML5模板引擎，可用于Web环境中的应用开发。Thymeleaf提供了一个用于整合Spring MVC的可选模块，在应用开发中，你可以使用Thymeleaf来完全代替JSP或其他模板引擎，如Velocity、FreeMarker等。Thymeleaf的主要目标在于提供一种可被浏览器正确显示的、格式良好的模板创建方式。  </p>
+<h3><span id="zheng-he-dao-spring-boot-bu-zou"><strong>整合到Spring boot步骤:</strong></span><a href="#zheng-he-dao-spring-boot-bu-zou" class="header-anchor">#</a></h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">1.pom.xml中添加thymeleaf依赖</span><br><span class="line"></span><br><span class="line">2.application.yml配置文件中关闭thymeleaf缓存</span><br><span class="line"></span><br><span class="line">3.编写controller：1.向model中存值，2.跳转到html页面</span><br><span class="line"></span><br><span class="line">4.编写html,springboot推荐放在resources-&gt;templates包下.</span><br><span class="line">  html标签上加入名称空间 xmlns:th&#x3D;&quot;http:&#x2F;&#x2F;www.thymeleaf.org&quot; ,表示该页面是一个thymeleaf模板页面。</span><br><span class="line">  这样就可以在页面上使用th标签取出model中的值，类似于EL表达式。</span><br><span class="line"></span><br><span class="line">5.访问测试</span><br></pre></td></tr></table></figure>
+<ul>
+<li><p>添加依赖</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">  <span class="comment">&lt;!--thymeleaf启动器--&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-starter-thymeleaf<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+</li>
+<li><p>关闭thymeleaf缓存</p>
+<figure class="highlight properties"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="attr">在application.yml</span></span><br><span class="line"><span class="comment">#能让改动的页面及时生效，实现类似热部署效果</span></span><br><span class="line"><span class="meta">spring.thymeleaf.cache</span>=<span class="string">false</span></span><br></pre></td></tr></table></figure>
+<p><img src="https://img-blog.csdnimg.cn/20200801000416513.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt></p>
+<h3><span id="thymeleaf-ji-ben-yu-fa">Thymeleaf基本语法</span><a href="#thymeleaf-ji-ben-yu-fa" class="header-anchor">#</a></h3></li>
+<li><p>常用属性</p>
+<table>
+<thead>
+<tr>
+<th>th：*属性</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>th:each</td>
+<td>元素遍历（类似JSP中的c:forEach标签）</td>
+</tr>
+<tr>
+<td>th:if</td>
+<td>条件判断，如果为真</td>
+</tr>
+<tr>
+<td>th:unless</td>
+<td>条件判断，如果为假</td>
+</tr>
+<tr>
+<td>th:value</td>
+<td>属性值修改，指定标签属性值</td>
+</tr>
+<tr>
+<td>th:href</td>
+<td>用于设定链接地址</td>
+</tr>
+<tr>
+<td>th:src</td>
+<td>用于设定链接地址</td>
+</tr>
+<tr>
+<td>th:text</td>
+<td>用于指定标签显示的文本内容</td>
+</tr>
+<tr>
+<td>使用步骤：</td>
+<td></td>
+</tr>
+</tbody></table>
+</li>
+</ul>
+<p>1.页面先引入Thymeleaf模板标签：<br>    <html lang="en" xmlns:th="http://www.thymeleaf.org"><br>2.使用Thymeleaf模板的相关标签动态填充页面内容。</html></p>
+<ul>
+<li><p>标准表达式</p>
+<table>
+<thead>
+<tr>
+<th>种类</th>
+<th>表达式语法</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>变量表达式</td>
+<td>${…}</td>
+<td>主要用于获取域对象中的变量值，类似EL表达式</td>
+</tr>
+<tr>
+<td>链接URL表达式</td>
+<td>@{…}</td>
+<td>用于 th:src 和 th:href,th:action属性中</td>
+</tr>
+<tr>
+<td>片段表达式</td>
+<td>~{…}</td>
+<td>使用th:insert或th:replace属性插入片段</td>
+</tr>
+<tr>
+<td>例子：</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>编写controller</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">@Controller</span><br><span class="line">public class ThController &#123;</span><br><span class="line"></span><br><span class="line">    @GetMapping(&quot;&#x2F;thymeleaf&quot;)</span><br><span class="line">    public String HelloThymeleaf(Model model)&#123;</span><br><span class="line">        &#x2F;&#x2F;向model中存值</span><br><span class="line">        model.addAttribute(&quot;name&quot;,&quot;刘备&quot;);</span><br><span class="line">        model.addAttribute(&quot;age&quot;,&quot;18&quot;);</span><br><span class="line">        &#x2F;&#x2F;跳转到helloThymeleaf.html</span><br><span class="line">        return &quot;Thymeleaf&quot;;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Thymeleaf.html页面</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html lang&#x3D;&quot;en&quot; xmlns:th&#x3D;&quot;http:&#x2F;&#x2F;www.thymeleaf.org&quot;&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;meta charset&#x3D;&quot;UTF-8&quot;&gt;</span><br><span class="line">    &lt;title&gt;Title&lt;&#x2F;title&gt;</span><br><span class="line">&lt;&#x2F;head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;p th:text&#x3D;&quot;&#39;我叫&#39;+$&#123;name&#125;+&#39;,今年&#39;+$&#123;age&#125;+&#39;岁了。&#39;&quot;&gt;&lt;&#x2F;p&gt;</span><br><span class="line"></span><br><span class="line">&lt;!--$&#123;&#125;只能独立的出现在th开头的属性值中，th:属性&#x3D;&quot;$&#123;&#125;&quot;--&gt;</span><br><span class="line">&lt;p&gt;我叫 &lt;span th:text&#x3D;&quot;$&#123;name&#125;&quot;&gt;&lt;&#x2F;span&gt;,今年 &lt;span th:text&#x3D;&quot;$&#123;age&#125;&quot;&gt;&lt;&#x2F;span&gt;岁了&lt;&#x2F;p&gt;</span><br><span class="line">&lt;&#x2F;body&gt;</span><br><span class="line">&lt;&#x2F;html&gt;</span><br></pre></td></tr></table></figure></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>src示例：</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>&lt;img th:src=”@{/img/research/{filename}(filename=${research.filename})}”&gt;</p>
+</blockquote>
+</li>
+</ul>
+<p>href示例：</p>
+<pre><code>&lt;a th:href=&quot;@{&apos;https://&apos;+${url.url}}&quot; th:text=&quot;${url.urlName}&quot;&gt;&lt;/a&gt;</code></pre><p>th:each示例<br>对象遍历，功能类似jstl中的 &lt;c:forEach&gt; 标签</p>
+<ul>
+<li><p>controller</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@GetMapping</span>(<span class="string">"/users"</span>)</span><br><span class="line">  <span class="function"><span class="keyword">public</span> String <span class="title">users</span><span class="params">(Model model)</span></span>&#123;</span><br><span class="line">       <span class="comment">//list集合数据</span></span><br><span class="line">      List&lt;User&gt; users = <span class="keyword">new</span> ArrayList&lt;User&gt;();</span><br><span class="line">      users.add(<span class="keyword">new</span> User(<span class="number">1</span>,<span class="string">"张三"</span>,<span class="string">"纽约"</span>));</span><br><span class="line">      users.add(<span class="keyword">new</span> User(<span class="number">2</span>,<span class="string">"李四"</span>,<span class="string">"上海"</span>));</span><br><span class="line">      users.add(<span class="keyword">new</span> User(<span class="number">3</span>,<span class="string">"王五"</span>,<span class="string">"伦敦"</span>));</span><br><span class="line">      model.addAttribute(<span class="string">"users"</span>,users);</span><br><span class="line"></span><br><span class="line">      <span class="comment">//Map集合数据</span></span><br><span class="line">      Map&lt;String,Object&gt; dataMap = <span class="keyword">new</span> HashMap&lt;String,Object&gt;();</span><br><span class="line">      dataMap.put(<span class="string">"No"</span>,<span class="string">"123"</span>);</span><br><span class="line">      dataMap.put(<span class="string">"address"</span>,<span class="string">"深圳"</span>);</span><br><span class="line">      model.addAttribute(<span class="string">"dataMap"</span>,dataMap); </span><br><span class="line">      </span><br><span class="line">      <span class="keyword">return</span> <span class="string">"helloThymeleaf"</span>;</span><br><span class="line">  &#125;</span><br></pre></td></tr></table></figure></li>
+<li><p>html</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">table</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">tr</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>下标<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>编号<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>姓名<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span>&gt;</span>住址<span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;<span class="name">tr</span> <span class="attr">th:each</span>=<span class="string">"user:$&#123;users&#125;"</span>&gt;</span></span><br><span class="line">              <span class="comment">&lt;!--user后加Stat表示状态变量--&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span> <span class="attr">th:text</span>=<span class="string">"$&#123;userStat.index&#125;"</span>&gt;</span><span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span> <span class="attr">th:text</span>=<span class="string">"$&#123;user.id&#125;"</span>&gt;</span><span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span> <span class="attr">th:text</span>=<span class="string">"$&#123;user.name&#125;"</span>&gt;</span><span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">td</span> <span class="attr">th:text</span>=<span class="string">"$&#123;user.address&#125;"</span>&gt;</span><span class="tag">&lt;/<span class="name">td</span>&gt;</span></span><br><span class="line">          <span class="tag">&lt;/<span class="name">tr</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">table</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">hr</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">th:each</span>=<span class="string">"entry:$&#123;dataMap&#125;"</span>&gt;</span></span><br><span class="line">         <span class="tag">&lt;<span class="name">span</span> <span class="attr">th:text</span>=<span class="string">"$&#123;entry&#125;"</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span><span class="tag">&lt;<span class="name">br</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">br</span>&gt;</span></span><br><span class="line">         <span class="tag">&lt;<span class="name">span</span> <span class="attr">th:text</span>=<span class="string">"$&#123;entry.key&#125;"</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span>:</span><br><span class="line">         <span class="tag">&lt;<span class="name">span</span> <span class="attr">th:text</span>=<span class="string">"$&#123;entry.value&#125;"</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">br</span>/&gt;</span> </span><br><span class="line">         ==============================================</span><br><span class="line">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>常用的时间格式化:</p>
+</li>
+<li><p>controller</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">model.addAttribute(<span class="string">"now"</span>,<span class="keyword">new</span> Date());</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>html</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">div</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">span</span> <span class="attr">th:text</span>=<span class="string">"$&#123;#dates.format(now,'yyyy-MM-dd HH:ss:mm')&#125;"</span>&gt;</span><span class="tag">&lt;/<span class="name">span</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>其中的#dates是thymeleaf的内置工具对象。</p>
+</li>
+</ul>
+<p><strong>在新建实体类时我们可以引入lombok这样就不需要setter,gettter,tostring方法</strong><br>使用步骤如下：<br>1.导入依赖</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"> &lt;!--lombok--&gt;</span><br><span class="line">&lt;dependency&gt;</span><br><span class="line">    &lt;groupId&gt;org.projectlombok&lt;&#x2F;groupId&gt;</span><br><span class="line">    &lt;artifactId&gt;lombok&lt;&#x2F;artifactId&gt;</span><br><span class="line">&lt;&#x2F;dependency&gt;</span><br></pre></td></tr></table></figure>
+<p>2.IDea中安装lombok插件<br>3.在实体类上添加@Data注解</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/01/Maven3%E5%9C%A8ideal%E4%B8%AD%E7%9A%84%E9%85%8D%E7%BD%AE/" rel="prev" title="Maven3在ideal中的配置">
+      <i class="fa fa-chevron-left"></i> Maven3在ideal中的配置
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/08/01/Mybatis%E4%B8%AD%E7%94%A8-Select%E4%BC%A0%E5%8F%82%E6%95%B0/" rel="next" title="Mybatis中用@Select传参数">
+      Mybatis中用@Select传参数 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">1.</span> <span class="nav-text">SpringBoot简介</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.1.</span> <span class="nav-text">先来介绍一下Spring</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.2.</span> <span class="nav-text">Springboot特点</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">2.</span> <span class="nav-text">在ideal中搭建springboot工程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">2.1.</span> <span class="nav-text">pom.xml解读</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">3.</span> <span class="nav-text">Springboot整合ssm</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">3.1.</span> <span class="nav-text">SpringMvc和Mybatis简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">3.2.</span> <span class="nav-text">SpringBoot支持两种格式的配置文件properties和yml格式.</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">3.3.</span> <span class="nav-text">工程搭建步骤</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">4.</span> <span class="nav-text">SpringBoot整合Thymeleaf</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">4.1.</span> <span class="nav-text">Thymeleaf简介</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">4.2.</span> <span class="nav-text">整合到Spring boot步骤:</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">4.3.</span> <span class="nav-text">Thymeleaf基本语法</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pengwengao"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">pengwengao</p>
+  <div class="site-description" itemprop="description">个人学习网站</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hearting" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hearting" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1077453259@qq.com" title="E-Mail → mailto:1077453259@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/yourname" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;yourname" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://www.zhihu.com/people/mr%E5%BD%AD44" title="知乎 → http:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;mr彭44" rel="noopener" target="_blank"><i class="fab fa-zhihu fa-fw"></i>知乎</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_42112448" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_42112448" rel="noopener" target="_blank">CSDN</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://gitee.com/pwg123_admin" title="https:&#x2F;&#x2F;gitee.com&#x2F;pwg123_admin" rel="noopener" target="_blank">Gitee</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pengwengao</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">135k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:03</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script size="300" alpha="0.6" zIndex="-1" src="/lib/canvas-ribbon/canvas-ribbon.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/three-waves.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+    <script defer src="/lib/three/canvas_sphere.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+   
+   
+   
+   <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+   <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+   
+       <script type="text/javascript">
+           function ShowGitment(){
+               document.getElementById("gitment-display-button").style.display = "none";
+               document.getElementById("gitment-container").style.display = "block";
+               var gitment = new Gitment({
+                   id: document.location.href, 
+                   owner: 'pwg123_admin',
+                   repo: 'blog',
+                   oauth: {
+                       client_id: '1c9840ee33161d96334a548f3179d63090f35624c3f746583e9612f72f80d9fd',
+                       client_secret: 'eb467f87bfca430e97709040d83fdde9ea0bb8513ae28ff57e8e4d0e2abccccd',
+                   }});
+               gitment.render('gitment-container');
+           }
+       </script>
+   
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'CEyBRxfkOzGDbJCqTlKOPUuQ-gzGzoHsz',
+      appKey     : 'c4KiJ36SEUjjMQbeKpfESY5j',
+      placeholder: "欢迎畅所欲言",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+
+</body>
+</html>
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/click.js"></script>

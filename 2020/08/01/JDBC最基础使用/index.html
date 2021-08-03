@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="JDBC的介绍 建议链接的五大步骤： JDBC 架构   两种方式获取连接对象 利用jdbc执行增删改查测试 查询所有数据，封装到List集合 使用DBUtils简化操作">
+<meta property="og:type" content="article">
+<meta property="og:title" content="JDBC最基础使用">
+<meta property="og:url" content="http://yoursite.com/2020/08/01/JDBC%E6%9C%80%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/index.html">
+<meta property="og:site_name" content="Hearting&#39;s Blog">
+<meta property="og:description" content="JDBC的介绍 建议链接的五大步骤： JDBC 架构   两种方式获取连接对象 利用jdbc执行增删改查测试 查询所有数据，封装到List集合 使用DBUtils简化操作">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200719152323372.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200719153501304.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200719161340944.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200719213755960.png">
+<meta property="article:published_time" content="2020-08-01T13:49:03.000Z">
+<meta property="article:modified_time" content="2020-08-01T13:55:09.646Z">
+<meta property="article:author" content="pengwengao">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200719152323372.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+
+<link rel="canonical" href="http://yoursite.com/2020/08/01/JDBC%E6%9C%80%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>JDBC最基础使用 | Hearting's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta custom-logo">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hearting's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <a>
+        <img class="custom-logo-image" src="/uploads/custom-logo.jpg" alt="Hearting's Blog">
+      </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/hearting" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/08/01/JDBC%E6%9C%80%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="pengwengao">
+      <meta itemprop="description" content="个人学习网站">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hearting's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          JDBC最基础使用
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2020-08-01 21:49:03 / 修改时间：21:55:09" itemprop="dateCreated datePublished" datetime="2020-08-01T21:49:03+08:00">2020-08-01</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/Java/" itemprop="url" rel="index"><span itemprop="name">Java</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/08/01/JDBC%E6%9C%80%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/08/01/JDBC%E6%9C%80%E5%9F%BA%E7%A1%80%E4%BD%BF%E7%94%A8/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>9.7k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>9 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <div class="toc">
+
+<!-- toc -->
+
+<ul>
+<li><a href="#jdbc-de-jie-shao">JDBC的介绍</a><ul>
+<li><a href="#jian-yi-lian-jie-de-wu-da-bu-zou">建议链接的五大步骤：</a></li>
+<li><a href="#jdbc-jia-gou">JDBC 架构</a></li>
+</ul>
+</li>
+<li><a href="#liang-chong-fang-shi-huo-qu-lian-jie-dui-xiang">两种方式获取连接对象</a></li>
+<li><a href="#li-yong-jdbc-zhi-xing-zeng-shan-gai-cha-ce-shi">利用jdbc执行增删改查测试</a></li>
+<li><a href="#cha-xun-suo-you-shu-ju-feng-zhuang-dao-list-ji-he">查询所有数据，封装到List集合</a></li>
+<li><a href="#shi-yong-dbutils-jian-hua-cao-zuo">使用DBUtils简化操作</a></li>
+</ul>
+<!-- tocstop -->
+
+</div>
+
+<a id="more"></a>
+
+<h2><span id="jdbc-de-jie-shao">JDBC的介绍</span><a href="#jdbc-de-jie-shao" class="header-anchor">#</a></h2><p>Java数据库连接，（Java Database Connectivity，简称JDBC）是Java语言中用来规范客户端程序如何来访问数据库的应用程序接口，提供了诸如查询和更新数据库中数据的方法。</p>
+<h3><span id="jian-yi-lian-jie-de-wu-da-bu-zou">建议链接的五大步骤：</span><a href="#jian-yi-lian-jie-de-wu-da-bu-zou" class="header-anchor">#</a></h3><ol>
+<li>加载（注册）数据库</li>
+<li>建立链接</li>
+<li>执行SQL语句</li>
+<li>处理结果集</li>
+<li>关闭数据库<h3><span id="jdbc-jia-gou">JDBC 架构</span><a href="#jdbc-jia-gou" class="header-anchor">#</a></h3></li>
+<li>传统连接<br><img src="https://img-blog.csdnimg.cn/20200719152323372.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt><br>缺点：<br>  用户每次请求都需要向数据库获得链接，而数据库创建连接通常需要消耗相对较大的资源，创建时间也较长。假设网站一天50万访问量，数据库服务器就需要创建50万次连接，极大的浪费数据库的资源，并且极易造成数据库服务器内存溢出、拓机。</li>
+<li>使用数据库连接池<br>连接池是将已经创建好的连接保存在池中，当有请求来时，直接使用已经创建好的连接对数据库进行访问。这样省略了创建连接和销毁连接的过程。这样性能上得到了提高。<br><img src="https://img-blog.csdnimg.cn/20200719153501304.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt><h2><span id="liang-chong-fang-shi-huo-qu-lian-jie-dui-xiang">两种方式获取连接对象</span><a href="#liang-chong-fang-shi-huo-qu-lian-jie-dui-xiang" class="header-anchor">#</a></h2></li>
+<li>用原始的jdbc方式去获取连接对象<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">@Test&#x2F;&#x2F;用原始的jdbc方式去获取连接对象</span><br><span class="line">   public void test() throws Exception &#123;</span><br><span class="line">       &#x2F;&#x2F;注册驱动,高版本自动注册，这一步可以省略不写</span><br><span class="line">       &#x2F;&#x2F;低版本mysql是</span><br><span class="line">       &#x2F;&#x2F;Class.forName(&quot;com.mysql.jdbc.Driver&quot;);</span><br><span class="line">      &#x2F;&#x2F; mysql8用</span><br><span class="line">       Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span><br><span class="line">       &#x2F;&#x2F;获取连接对象</span><br><span class="line">       &#x2F;&#x2F;如果在本机上可使用：</span><br><span class="line">       &#x2F;&#x2F; Connection con&#x3D; DriverManager.getConnection(&quot;jdbc:mysql:&#x2F;&#x2F;&#x2F;yz&quot;,&quot;root&quot;,&quot;password&quot;);</span><br><span class="line">       Connection con&#x3D; DriverManager.getConnection(&quot;jdbc:mysql:&#x2F;&#x2F;127.0.0.1:3306&#x2F;yz&quot;,&quot;root&quot;,&quot;password&quot;);</span><br><span class="line">       System.out.println(con);&#x2F;&#x2F;输出连接对象的哈希地址值</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+使用druid连接池<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">@Test&#x2F;&#x2F;使用druid连接池</span><br><span class="line">   public void test1() throws Exception &#123;</span><br><span class="line">       &#x2F;&#x2F;创建数据源（连接池）对象，并关联jdbc参数</span><br><span class="line">       DruidDataSource ds&#x3D; new DruidDataSource();</span><br><span class="line">       ds.setDriverClassName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span><br><span class="line">       ds.setUrl(&quot;jdbc:mysql:&#x2F;&#x2F;&#x2F;yz&quot;);</span><br><span class="line">       ds.setUsername(&quot;root&quot;);</span><br><span class="line">       ds.setPassword(&quot;password&quot;);</span><br><span class="line">       DruidPooledConnection con&#x3D;ds.getConnection();</span><br><span class="line">       System.out.println(con);</span><br><span class="line">       &#125;</span><br></pre></td></tr></table></figure>
+<h2><span id="li-yong-jdbc-zhi-xing-zeng-shan-gai-cha-ce-shi">利用jdbc执行增删改查测试</span><a href="#li-yong-jdbc-zhi-xing-zeng-shan-gai-cha-ce-shi" class="header-anchor">#</a></h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line">import org.junit.Before;</span><br><span class="line">import org.junit.Test;</span><br><span class="line">import java.sql.Connection;</span><br><span class="line">import java.sql.DriverManager;</span><br><span class="line">import java.sql.PreparedStatement;</span><br><span class="line">import java.sql.ResultSet;</span><br><span class="line"></span><br><span class="line">public class hello1 &#123;</span><br><span class="line">&#x2F;&#x2F;    @SuppressWarnings(&quot;all&quot;)&#x2F;&#x2F;工程中有重复的代码，会有灰色的波浪线提示，用该注解，消除提示</span><br><span class="line">    private Connection con;</span><br><span class="line">    @Before&#x2F;&#x2F;执行每一个@Test方法前，都会去执行@Before方法</span><br><span class="line">    public void init() throws Exception &#123;</span><br><span class="line">        Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span><br><span class="line">        con&#x3D; DriverManager.getConnection(&quot;jdbc:mysql:&#x2F;&#x2F;&#x2F;yz&quot;,&quot;root&quot;,&quot;password&quot;);</span><br><span class="line">        System.out.println(con);&#x2F;&#x2F;输出连接对象的哈希地址值</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Test&#x2F;&#x2F;测试在表中添加数据</span><br><span class="line">    public void test1() throws Exception &#123;</span><br><span class="line">        &#x2F;&#x2F;测试jdbc新增</span><br><span class="line">        String sql &#x3D; &quot;insert into dept values (null,?,?)&quot;;</span><br><span class="line">        &#x2F;&#x2F;获取执行sql的预编译对象</span><br><span class="line">        PreparedStatement psmt &#x3D; con.prepareStatement(sql);</span><br><span class="line">        &#x2F;&#x2F;为占位符赋值</span><br><span class="line">        psmt.setString(1, &quot;销售部&quot;);</span><br><span class="line">        psmt.setString(2, &quot;光谷软件园D5栋&quot;);</span><br><span class="line">        &#x2F;&#x2F;执行sql</span><br><span class="line">        int i &#x3D; psmt.executeUpdate();</span><br><span class="line">        System.out.println(i + &quot;行数据受影响&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Test&#x2F;&#x2F;测试在表中修改数据</span><br><span class="line">    public void test2() throws Exception &#123;</span><br><span class="line">        &#x2F;&#x2F;测试jdbc修改</span><br><span class="line">        String sql&#x3D;&quot;update dept set dname&#x3D;? where did&#x3D;?&quot;;</span><br><span class="line">        &#x2F;&#x2F;获取执行sql的预编译对象</span><br><span class="line">        PreparedStatement psmt&#x3D;con.prepareStatement(sql);</span><br><span class="line">        &#x2F;&#x2F;为占位符赋值</span><br><span class="line">        psmt.setString(1,&quot;采购部&quot;);</span><br><span class="line">        psmt.setInt(2,1);</span><br><span class="line">        &#x2F;&#x2F;执行sql</span><br><span class="line">        int i&#x3D;psmt.executeUpdate();</span><br><span class="line">        System.out.println(i+&quot;行数据受影响&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Test&#x2F;&#x2F;使用jdbc测试删除</span><br><span class="line">    public void test3() throws Exception &#123;</span><br><span class="line">        &#x2F;&#x2F;测试jdbc删除</span><br><span class="line">        String sql&#x3D;&quot;delete from dept where dname&#x3D;?&quot;;</span><br><span class="line">        &#x2F;&#x2F;获取执行sql的预编译对象</span><br><span class="line">        PreparedStatement psmt&#x3D;con.prepareStatement(sql);</span><br><span class="line">        &#x2F;&#x2F;为占位符赋值</span><br><span class="line">        psmt.setString(1,&quot;销售部&quot;);</span><br><span class="line">        &#x2F;&#x2F;执行sql</span><br><span class="line">        int i&#x3D;psmt.executeUpdate();</span><br><span class="line">        System.out.println(i+&quot;行数据受影响&quot;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Test&#x2F;&#x2F;使用jdbc测试查询--查询单行数据</span><br><span class="line">    public void test4() throws Exception &#123;</span><br><span class="line">        &#x2F;&#x2F;测试jdbc查询单行数据</span><br><span class="line">        String sql1&#x3D;&quot;select * from dept where did&#x3D;?&quot;;</span><br><span class="line">        &#x2F;&#x2F;获取执行sql的预编译对象</span><br><span class="line">        PreparedStatement psmt1&#x3D;con.prepareStatement(sql1);</span><br><span class="line">        &#x2F;&#x2F;为占位符赋值</span><br><span class="line">        psmt1.setInt(1,5);</span><br><span class="line">        &#x2F;&#x2F;执行sql返回结果集</span><br><span class="line">        ResultSet rs&#x3D;psmt1.executeQuery();</span><br><span class="line">        &#x2F;&#x2F;拆开，遍历结果集：rs只有一行，只需要判断是否有数据即可；rs有多行，使用迭代器遍历</span><br><span class="line">        if (rs.next())&#123;</span><br><span class="line">            int did&#x3D;rs.getInt(1);</span><br><span class="line">            String dname&#x3D;rs.getString(2);</span><br><span class="line">            String location&#x3D;rs.getString(3);</span><br><span class="line">            System.out.println(did);</span><br><span class="line">            System.out.println(dname);</span><br><span class="line">            System.out.println(location);</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    @Test&#x2F;&#x2F;使用jdbc测试查询--查询多行数据</span><br><span class="line">    public void test5() throws Exception &#123;</span><br><span class="line">        &#x2F;&#x2F;测试jdbc查询单行数据</span><br><span class="line">       String sql2&#x3D;&quot;select * from dept&quot;;</span><br><span class="line">       &#x2F;&#x2F;获取执行sql的预编译对象</span><br><span class="line">       PreparedStatement psmt2&#x3D;con.prepareStatement(sql2);</span><br><span class="line">       &#x2F;&#x2F;执行sql返回结果集</span><br><span class="line">       ResultSet rs1&#x3D;psmt2.executeQuery();</span><br><span class="line">       &#x2F;&#x2F;拆开，遍历结果集：rs只有一行，只需要判断是否有数据即可；rs有多行，使用迭代器遍历</span><br><span class="line">       while (rs1.next())&#123;</span><br><span class="line">           int did&#x3D;rs1.getInt(&quot;did&quot;);</span><br><span class="line">           String dname&#x3D;rs1.getString(&quot;dname&quot;);</span><br><span class="line">           String location&#x3D;rs1.getString(&quot;location&quot;);</span><br><span class="line">           System.out.println(did+&quot;      &quot;+dname+&quot;       &quot;+location);</span><br><span class="line">       &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2><span id="cha-xun-suo-you-shu-ju-feng-zhuang-dao-list-ji-he">查询所有数据，封装到List集合</span><a href="#cha-xun-suo-you-shu-ju-feng-zhuang-dao-list-ji-he" class="header-anchor">#</a></h2>ResultSet集合包含符合SQL语句中条件的所有行，并且它通过一套get方法（这些get方法可以访问当前行中的不同列）提供了对这些行中数据的访问。ResultSet.next方法用于移动到ResultSet中的下一行，使下一行成为当前行。但我们处理数据大部分情况都用的list。接下来我们讲查询的数据处理到List中。</li>
+</ol>
+<p>查询emps表数据,并封装到List集合中<br>dept.java</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">public class dept &#123;</span><br><span class="line">    private String did;</span><br><span class="line">    private String dname;</span><br><span class="line">    private String location;</span><br><span class="line">    @Override</span><br><span class="line">    public String toString() &#123;</span><br><span class="line">        return &quot;dept&#123;&quot; +</span><br><span class="line">                &quot;did&#x3D;&#39;&quot; + did + &#39;\&#39;&#39; +</span><br><span class="line">                &quot;, dname&#x3D;&#39;&quot; + dname + &#39;\&#39;&#39; +</span><br><span class="line">                &quot;, location&#x3D;&#39;&quot; + location + &#39;\&#39;&#39; +</span><br><span class="line">                &#39;&#125;&#39;;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public dept(String did, String dname, String location) &#123;</span><br><span class="line">        this.did &#x3D; did;</span><br><span class="line">        this.dname &#x3D; dname;</span><br><span class="line">        this.location &#x3D; location;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public dept() &#123;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public String getDid() &#123;</span><br><span class="line">        return did;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void setDid(String did) &#123;</span><br><span class="line">        this.did &#x3D; did;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public String getDname() &#123;</span><br><span class="line">        return dname;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void setDname(String dname) &#123;</span><br><span class="line">        this.dname &#x3D; dname;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public String getLocation() &#123;</span><br><span class="line">        return location;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    public void setLocation(String location) &#123;</span><br><span class="line">        this.location &#x3D; location;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>hello2.java</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">import org.junit.Before;</span><br><span class="line">import org.junit.Test;</span><br><span class="line">import java.sql.Connection;</span><br><span class="line">import java.sql.DriverManager;</span><br><span class="line">import java.sql.PreparedStatement;</span><br><span class="line">import java.sql.ResultSet;</span><br><span class="line">import java.util.ArrayList;</span><br><span class="line"></span><br><span class="line">&#x2F;&#x2F;查询所有数据，封装到List集合</span><br><span class="line">public class hello2 &#123;</span><br><span class="line">    private Connection con;</span><br><span class="line">    @Before&#x2F;&#x2F;执行每一个@Test方法前，都会去执行@Before方法</span><br><span class="line">    public void init() throws Exception &#123;</span><br><span class="line">        Class.forName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span><br><span class="line">        con&#x3D; DriverManager.getConnection(&quot;jdbc:mysql:&#x2F;&#x2F;&#x2F;yz&quot;,&quot;root&quot;,&quot;password&quot;);</span><br><span class="line">        System.out.println(con);&#x2F;&#x2F;输出连接对象的哈希地址值</span><br><span class="line">    &#125;</span><br><span class="line">    @Test</span><br><span class="line">    public void test() throws Exception&#123;</span><br><span class="line">        String sql &#x3D; &quot;select * from dept&quot;;</span><br><span class="line">        &#x2F;&#x2F;获取执行sql的预编译对象</span><br><span class="line">        PreparedStatement psmt &#x3D; con.prepareStatement(sql);</span><br><span class="line">        &#x2F;&#x2F;执行sql返回结果集</span><br><span class="line">        ResultSet rs &#x3D; psmt.executeQuery();</span><br><span class="line">        &#x2F;&#x2F;3.遍历结果集rs</span><br><span class="line">        ArrayList&lt;dept&gt; list &#x3D; new ArrayList&lt;&gt;();</span><br><span class="line">        while (rs.next()) &#123;&#x2F;&#x2F;rs.next()准备取出某一行数据</span><br><span class="line">            String did &#x3D; rs.getString(&quot;did&quot;);</span><br><span class="line">            String dname &#x3D; rs.getString(&quot;dname&quot;);</span><br><span class="line">            String location &#x3D; rs.getString(&quot;location&quot;);</span><br><span class="line">            &#x2F;&#x2F;将emps表中的每一行数据封装成一个emps对象</span><br><span class="line">            dept dept &#x3D; new dept(did, dname, location);</span><br><span class="line">            &#x2F;&#x2F;emps对象存进list集合中</span><br><span class="line">            list.add(dept);</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(&quot;封装后的集合数据：&quot;+list);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意：<br>可能会报错如下：<br><img src="https://img-blog.csdnimg.cn/20200719161340944.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt><br>解决方法：</p>
+<ol>
+<li>MySQLl的jdbc驱动最新版（6.0+）时，遇到数据库和系统时区差异引起的问题。换用低版本的jar包。</li>
+<li>在URL后面加上时区参数，只要出现URL就需要添加后面的<blockquote>
+<p>?serverTimezone=UTC<br>或<br>?serverTimezone=GMT%2B8</p>
+</blockquote>
+</li>
+<li>找到mysql的安装目录下MySQL Server 8.0目录下的my.ini文件，在mysqld下加入如下代码：<blockquote>
+<p>default-time-zone = ‘+8:00’</p>
+</blockquote>
+</li>
+</ol>
+<p>特别提醒：<br>网上的另一种解决方法有个小问题，就是重启mysql后会还原为默认设置，需要重新设置，<strong>最好不要用下面这种方法。</strong><br><img src="https://img-blog.csdnimg.cn/20200719213755960.png" alt></p>
+<h2><span id="shi-yong-dbutils-jian-hua-cao-zuo">使用DBUtils简化操作</span><a href="#shi-yong-dbutils-jian-hua-cao-zuo" class="header-anchor">#</a></h2><p>DBUtils是一个对JDBC进行简单封装的开源工具类库   </p>
+<p>用传统JDBC实现DBUtils如下：<br> Jdbcutil.java</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br></pre></td><td class="code"><pre><span class="line">import java.lang.reflect.Field;</span><br><span class="line">import java.sql.*;</span><br><span class="line">import java.util.ArrayList;</span><br><span class="line">import java.util.List;</span><br><span class="line"></span><br><span class="line">public class Jdbcutil &#123;</span><br><span class="line">    &#x2F;&#x2F;将查询结果集rs中的数据封装到list集合中</span><br><span class="line">    public static &lt;T&gt; List&lt;T&gt; queryList(String sql, Class&lt;T&gt; c) &#123;</span><br><span class="line">        try &#123;</span><br><span class="line">            Class.forName(&quot;com.mysql.jdbc.Driver&quot;);</span><br><span class="line">            &#x2F;&#x2F;2.获取连接对象</span><br><span class="line">            Connection con &#x3D; DriverManager.getConnection(&quot;jdbc:mysql:&#x2F;&#x2F;&#x2F;yz&quot;, &quot;root&quot;, &quot;password&quot;);</span><br><span class="line">            &#x2F;&#x2F;1.定义sql</span><br><span class="line">            &#x2F;&#x2F;2.创建执行sql的对象</span><br><span class="line">            PreparedStatement pstm &#x3D; con.prepareStatement(sql);</span><br><span class="line">            &#x2F;&#x2F;3.执行sql</span><br><span class="line">            ResultSet rs &#x3D; pstm.executeQuery();</span><br><span class="line">            &#x2F;&#x2F;4.遍历rs,创建一个list集合</span><br><span class="line">            ArrayList&lt;T&gt; list &#x3D; new ArrayList&lt;&gt;();</span><br><span class="line">            &#x2F;&#x2F;5.元数据</span><br><span class="line">            ResultSetMetaData md &#x3D; rs.getMetaData();</span><br><span class="line">            &#x2F;&#x2F;总列数</span><br><span class="line">            int count &#x3D; md.getColumnCount();</span><br><span class="line">            while (rs.next()) &#123;</span><br><span class="line">                &#x2F;&#x2F;T通用类型，不确实是哪一个实体类，dept,emps</span><br><span class="line">                T t &#x3D; c.newInstance();</span><br><span class="line">                for (int i &#x3D; 1; i &lt;&#x3D; count; i++) &#123;</span><br><span class="line">                    &#x2F;&#x2F;每一个单元格的数据</span><br><span class="line">                    Object value &#x3D; rs.getObject(i);</span><br><span class="line">                    &#x2F;&#x2F;反射中对 属性的操作，将上面单元格的数据value,存到对象t中</span><br><span class="line">                    &#x2F;&#x2F;使用元数据获取列名,列名和实体类的属性名相同的</span><br><span class="line">                    String columnName &#x3D; md.getColumnName(i);</span><br><span class="line">                    &#x2F;&#x2F;获取实体类的每一个属性的管理对象</span><br><span class="line">                    Field f &#x3D; c.getDeclaredField(columnName);</span><br><span class="line">                    &#x2F;&#x2F;由于成员属性进行了封装，是private，暴力反射，开启私有属性操作权限</span><br><span class="line">                    f.setAccessible(true);</span><br><span class="line">                    f.set(t, value);&#x2F;&#x2F;将value赋值给t对象的columnName属性</span><br><span class="line">                &#125;</span><br><span class="line">                list.add(t);</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(&quot;封装后的集合数据：&quot; + list);</span><br><span class="line">            return list;</span><br><span class="line"></span><br><span class="line">        &#125; catch (Exception e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            return null;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">@Test//测试部门表</span><br><span class="line">public void test1() throws SQLException &#123;</span><br><span class="line">    List&lt;dept&gt; dp= Jdbcutil.queryList(<span class="string">"select * from dept"</span>,dept.class);</span><br><span class="line">    System.out.println(dp);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>使用DBUtils简化操作</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">@Test&#x2F;&#x2F;测试dbutils</span><br><span class="line">   public void test() throws SQLException &#123;</span><br><span class="line">       DruidDataSource ds&#x3D; new DruidDataSource();</span><br><span class="line">       ds.setDriverClassName(&quot;com.mysql.cj.jdbc.Driver&quot;);</span><br><span class="line">       ds.setUrl(&quot;jdbc:mysql:&#x2F;&#x2F;&#x2F;yz&quot;);</span><br><span class="line">       ds.setUsername(&quot;root&quot;);</span><br><span class="line">       ds.setPassword(&quot;password&quot;);</span><br><span class="line">       &#x2F;&#x2F;1.创建qr对象，传入数据源参数</span><br><span class="line">       QueryRunner qs&#x3D;new QueryRunner(ds);</span><br><span class="line">       &#x2F;&#x2F;2.调用查询方法</span><br><span class="line">       List &lt;dept&gt; dp&#x3D;qs.query(&quot;select * from dept&quot;,new BeanListHandler&lt;dept&gt;(dept.class));</span><br><span class="line"></span><br><span class="line">       System.out.println(dp);</span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/Java/" rel="tag"><i class="fa fa-tag"></i> Java</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/08/01/mysql%E8%BF%9C%E7%A8%8B%E8%BF%9E%E6%8E%A5%E6%95%B0%E6%8D%AE%E5%BA%93%E5%8E%9F%E6%9D%A5%E6%80%8E%E4%B9%88%E7%AE%80%E5%8D%95/" rel="prev" title="mysql远程连接数据库原来怎么简单">
+      <i class="fa fa-chevron-left"></i> mysql远程连接数据库原来怎么简单
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/08/01/HTML%E5%BF%AB%E9%80%9F%E4%BA%86%E8%A7%A3%E5%85%A5%E9%97%A8%E6%95%99%E7%A8%8B/" rel="next" title="HTML快速了解入门教程">
+      HTML快速了解入门教程 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">1.</span> <span class="nav-text">JDBC的介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.1.</span> <span class="nav-text">建议链接的五大步骤：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.2.</span> <span class="nav-text">JDBC 架构</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">2.</span> <span class="nav-text">两种方式获取连接对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">3.</span> <span class="nav-text">利用jdbc执行增删改查测试</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">4.</span> <span class="nav-text">查询所有数据，封装到List集合</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">5.</span> <span class="nav-text">使用DBUtils简化操作</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pengwengao"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">pengwengao</p>
+  <div class="site-description" itemprop="description">个人学习网站</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hearting" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hearting" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1077453259@qq.com" title="E-Mail → mailto:1077453259@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/yourname" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;yourname" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://www.zhihu.com/people/mr%E5%BD%AD44" title="知乎 → http:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;mr彭44" rel="noopener" target="_blank"><i class="fab fa-zhihu fa-fw"></i>知乎</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_42112448" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_42112448" rel="noopener" target="_blank">CSDN</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://gitee.com/pwg123_admin" title="https:&#x2F;&#x2F;gitee.com&#x2F;pwg123_admin" rel="noopener" target="_blank">Gitee</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pengwengao</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">135k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:03</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script size="300" alpha="0.6" zIndex="-1" src="/lib/canvas-ribbon/canvas-ribbon.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/three-waves.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+    <script defer src="/lib/three/canvas_sphere.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+   
+   
+   
+   <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+   <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+   
+       <script type="text/javascript">
+           function ShowGitment(){
+               document.getElementById("gitment-display-button").style.display = "none";
+               document.getElementById("gitment-container").style.display = "block";
+               var gitment = new Gitment({
+                   id: document.location.href, 
+                   owner: 'pwg123_admin',
+                   repo: 'blog',
+                   oauth: {
+                       client_id: '1c9840ee33161d96334a548f3179d63090f35624c3f746583e9612f72f80d9fd',
+                       client_secret: 'eb467f87bfca430e97709040d83fdde9ea0bb8513ae28ff57e8e4d0e2abccccd',
+                   }});
+               gitment.render('gitment-container');
+           }
+       </script>
+   
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'CEyBRxfkOzGDbJCqTlKOPUuQ-gzGzoHsz',
+      appKey     : 'c4KiJ36SEUjjMQbeKpfESY5j',
+      placeholder: "欢迎畅所欲言",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+
+</body>
+</html>
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/click.js"></script>

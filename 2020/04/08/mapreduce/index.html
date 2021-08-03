@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+  <link rel="stylesheet" href="/lib/pace/pace-theme-minimal.min.css">
+  <script src="/lib/pace/pace.min.js"></script>
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":true,"scrollpercent":true},"bookmark":{"enable":true,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="mapreduce基础知识 MapReduce编程模型 Google MapReduce并行处理的基本过程 1.带宽优化： 2.用数据分区解决数据相关性问题：   MapReduce框架组成 数据存储与计算节点构架 体系结构 大概流程： 文件输入格式InputFormat 输入数据分块InputSplits 数据记录读入RecordReader Mapper shuffle阶段： Red">
+<meta property="og:type" content="article">
+<meta property="og:title" content="mapreduce基础知识">
+<meta property="og:url" content="http://yoursite.com/2020/04/08/mapreduce/index.html">
+<meta property="og:site_name" content="Hearting&#39;s Blog">
+<meta property="og:description" content="mapreduce基础知识 MapReduce编程模型 Google MapReduce并行处理的基本过程 1.带宽优化： 2.用数据分区解决数据相关性问题：   MapReduce框架组成 数据存储与计算节点构架 体系结构 大概流程： 文件输入格式InputFormat 输入数据分块InputSplits 数据记录读入RecordReader Mapper shuffle阶段： Red">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200403011440528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200403011345581.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200403011235621.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200403011212908.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200403011107433.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="og:image" content="https://img-blog.csdnimg.cn/20200403011011708.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+<meta property="article:published_time" content="2020-04-08T08:49:12.000Z">
+<meta property="article:modified_time" content="2020-04-09T02:59:31.812Z">
+<meta property="article:author" content="pengwengao">
+<meta property="article:tag" content="BigData">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://img-blog.csdnimg.cn/20200403011440528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70">
+
+<link rel="canonical" href="http://yoursite.com/2020/04/08/mapreduce/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>mapreduce基础知识 | Hearting's Blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta custom-logo">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Hearting's Blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <a>
+        <img class="custom-logo-image" src="/uploads/custom-logo.jpg" alt="Hearting's Blog">
+      </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup">
+        <div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div id="search-result">
+  <div id="no-result">
+    <i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+    </header>
+
+    
+  <div class="reading-progress-bar"></div>
+  <a role="button" class="book-mark-link book-mark-link-fixed"></a>
+
+  <a href="https://github.com/hearting" class="github-corner" title="Follow me on GitHub" aria-label="Follow me on GitHub" rel="noopener" target="_blank"><svg width="80" height="80" viewBox="0 0 250 250" aria-hidden="true"><path d="M0,0 L115,115 L130,115 L142,142 L250,250 L250,0 Z"></path><path d="M128.3,109.0 C113.8,99.7 119.0,89.6 119.0,89.6 C122.0,82.7 120.5,78.6 120.5,78.6 C119.2,72.0 123.4,76.3 123.4,76.3 C127.3,80.9 125.5,87.3 125.5,87.3 C122.9,97.6 130.6,101.9 134.4,103.2" fill="currentColor" style="transform-origin: 130px 106px;" class="octo-arm"></path><path d="M115.0,115.0 C114.9,115.1 118.7,116.5 119.8,115.4 L133.7,101.6 C136.9,99.2 139.9,98.4 142.2,98.6 C133.8,88.0 127.5,74.4 143.8,58.0 C148.5,53.4 154.0,51.2 159.7,51.0 C160.3,49.4 163.2,43.6 171.4,40.1 C171.4,40.1 176.1,42.5 178.8,56.2 C183.1,58.6 187.2,61.8 190.9,65.4 C194.5,69.0 197.7,73.2 200.1,77.6 C213.8,80.2 216.3,84.9 216.3,84.9 C212.7,93.1 206.9,96.0 205.4,96.6 C205.1,102.4 203.0,107.8 198.3,112.5 C181.9,128.9 168.3,122.5 157.7,114.1 C157.9,116.9 156.7,120.9 152.7,124.9 L141.0,136.5 C139.8,137.7 141.6,141.9 141.8,141.8 Z" fill="currentColor" class="octo-body"></path></svg></a>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/08/mapreduce/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="pengwengao">
+      <meta itemprop="description" content="个人学习网站">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hearting's Blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          mapreduce基础知识
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2020-04-08 16:49:12" itemprop="dateCreated datePublished" datetime="2020-04-08T16:49:12+08:00">2020-04-08</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2020-04-09 10:59:31" itemprop="dateModified" datetime="2020-04-09T10:59:31+08:00">2020-04-09</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/BigData/" itemprop="url" rel="index"><span itemprop="name">BigData</span></a>
+                </span>
+            </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/2020/04/08/mapreduce/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/2020/04/08/mapreduce/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  <br>
+            <span class="post-meta-item" title="本文字数">
+              <span class="post-meta-item-icon">
+                <i class="far fa-file-word"></i>
+              </span>
+                <span class="post-meta-item-text">本文字数：</span>
+              <span>4.9k</span>
+            </span>
+            <span class="post-meta-item" title="阅读时长">
+              <span class="post-meta-item-icon">
+                <i class="far fa-clock"></i>
+              </span>
+                <span class="post-meta-item-text">阅读时长 &asymp;</span>
+              <span>4 分钟</span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <div class="toc">
+
+<!-- toc -->
+
+<ul>
+<li><a href="#mapreduce-ji-chu-zhi-shi">mapreduce基础知识</a><ul>
+<li><a href="#mapreduce-bian-cheng-mo-xing">MapReduce编程模型</a></li>
+<li><a href="#google-mapreduce-bing-xing-chu-li-de-ji-ben-guo-cheng">Google MapReduce并行处理的基本过程</a><ul>
+<li><a href="#1-dai-kuan-you-hua">1.带宽优化：</a></li>
+<li><a href="#2-yong-shu-ju-fen-qu-jie-jue-shu-ju-xiang-guan-xing-wen-ti">2.用数据分区解决数据相关性问题：</a></li>
+</ul>
+</li>
+<li><a href="#mapreduce-kuang-jia-zu-cheng">MapReduce框架组成</a></li>
+<li><a href="#shu-ju-cun-chu-yu-ji-suan-jie-dian-gou-jia">数据存储与计算节点构架</a></li>
+<li><a href="#ti-xi-jie-gou">体系结构</a><ul>
+<li><a href="#da-gai-liu-cheng">大概流程：</a></li>
+<li><a href="#wen-jian-shu-ru-ge-shi-inputformat">文件输入格式InputFormat</a></li>
+<li><a href="#shu-ru-shu-ju-fen-kuai-inputsplits">输入数据分块InputSplits</a></li>
+<li><a href="#shu-ju-ji-lu-du-ru-recordreader">数据记录读入RecordReader</a></li>
+<li><a href="#mapper">Mapper</a></li>
+<li><a href="#shuffle-jie-duan">shuffle阶段：</a></li>
+<li><a href="#reducer">Reducer</a></li>
+<li><a href="#wen-jian-shu-chu-ge-shi-outputformat">文件输出格式OutputFormat</a></li>
+</ul>
+</li>
+<li><a href="#guan-yu-hdfs-block-he-mapreduce-split">关于HDFS block和MapReduce split</a></li>
+</ul>
+</li>
+</ul>
+<!-- tocstop -->
+
+</div>
+
+<h1><span id="mapreduce-ji-chu-zhi-shi">mapreduce基础知识</span><a href="#mapreduce-ji-chu-zhi-shi" class="header-anchor">#</a></h1><p>Mapreduce 是一个分布式运算程序的编程框架，是用户开发“基于 hadoop 的数据分析 应用”的核心框架</p>
+<p>Mapreduce 核心功能是将用户编写的业务逻辑代码和自带默认组件整合成一个完整的 分布式运算程序，并发运行在一个 hadoop 集群上</p>
+<a id="more"></a>
+
+<h2><span id="mapreduce-bian-cheng-mo-xing">MapReduce编程模型</span><a href="#mapreduce-bian-cheng-mo-xing" class="header-anchor">#</a></h2><p>MapReduce 由 两 个 阶 段 组 成 ：Map 和 Reduce。</p>
+<p>map() 函数以 key/value 对作为输入，产生另外一系列 key/value 对作为中间输出写入本地 磁盘。MapReduce 框架会自动将这些中间数据按照 key 值进行聚集，且 key 值相同（用户可 设定聚集策略，默认情况下是对 key 值进行哈希取模）的数据被统一交给 reduce() 函数处理。<br>reduce() 函数以 key 及对应的 value 列表作为输入，经合并 key 相同的 value 值后，产 生另外一系列 key/value 对作为最终输出写入 HDFS。<br>指定三个组件分别是 InputFormat、Partitioner 和 OutputFormat， 它们均需要用户根据自己的应用需求配置①指定输入 文件格式。将输入数据切分成若干个 split，且将每个 split 中的数据解析成一个个 map() 函数 要求的 key/value 对。②确定 map() 函数产生的每个 key/value 对发给哪个 Reduce Task 函数处 理。③指定输出文件格式，即每个 key/value 对以何种形式保存到输出文件中。</p>
+<h2><span id="google-mapreduce-bing-xing-chu-li-de-ji-ben-guo-cheng">Google MapReduce并行处理的基本过程</span><a href="#google-mapreduce-bing-xing-chu-li-de-ji-ben-guo-cheng" class="header-anchor">#</a></h2><p><img src="https://img-blog.csdnimg.cn/20200403011440528.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt></p>
+<h3><span id="1-dai-kuan-you-hua">1.带宽优化：</span><a href="#1-dai-kuan-you-hua" class="header-anchor">#</a></h3><p>大量的键值对数据在传送给Reduce节点时会引起较大的通信带开销.·解决方案</p>
+<p>每个Map节点处理完成的中间键值对将由combiner做一个合并庄缩，即把那些键名相同的鍵值对归井 为一个鍵名下的一组数值.</p>
+<h3><span id="2-yong-shu-ju-fen-qu-jie-jue-shu-ju-xiang-guan-xing-wen-ti">2.用数据分区解决数据相关性问题：</span><a href="#2-yong-shu-ju-fen-qu-jie-jue-shu-ju-xiang-guan-xing-wen-ti" class="header-anchor">#</a></h3><p>一个Reduce节点上的计算数据可能会来自多个Map节点，因此，为了在进入Reduce节点计算之前，需要把属于一个Reduce节点的数据归并到一起.</p>
+<p>在Map阶段进行了Corbining以后，可以根据一定的策路对Ma输出的中间结果进行分区（partitioning），这样即可解决以上数据相关性问题避免Reduceit算过程中的数据通信.</p>
+<h2><span id="mapreduce-kuang-jia-zu-cheng">MapReduce框架组成</span><a href="#mapreduce-kuang-jia-zu-cheng" class="header-anchor">#</a></h2><p><img src="https://img-blog.csdnimg.cn/20200403011345581.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt></p>
+<p>当一个作被提交给Hadoop时，这个作业输入数剧划分成很多个等长的快，每个数据块都会对应一个a任务。这些map任务时执行，并行化地处理数据。</p>
+<p>map任务的输出排序，然后分发给Redace任务以做进一步处理。</p>
+<p>作业（Job）和任务（Task）是Hadoop MapRedace并行计算框架中常重要的两个概念。</p>
+<p>任务（Task）是Hadoop mapRetoce架进行并行计算的基本单位，是一个逻辑上的概念。</p>
+<h2><span id="shu-ju-cun-chu-yu-ji-suan-jie-dian-gou-jia">数据存储与计算节点构架</span><a href="#shu-ju-cun-chu-yu-ji-suan-jie-dian-gou-jia" class="header-anchor">#</a></h2><p><img src="https://img-blog.csdnimg.cn/20200403011235621.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt></p>
+<p>为了实现Hadoop系统设计中本地化计算的原则，数据存储节点DataNode与计算节点TaskTracker将合并设置，让每个从节点同时运行作为DataNode和TaskTracker，以此让每个TaskTracker尽可能处理存储在本地DataNode上的数据.</p>
+<p>而数据主控节点NameNode与作业执行主控节点jobTracker既可以设置在同一个主控节点上，在集群规模较大或者这两个主控节点负载都很高以致于会相互影响时，也可以分开设置在两个不同的节点上.</p>
+<h2><span id="ti-xi-jie-gou">体系结构</span><a href="#ti-xi-jie-gou" class="header-anchor">#</a></h2><p><img src="https://img-blog.csdnimg.cn/20200403011212908.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt></p>
+<p><strong>Client（客户端）</strong></p>
+<p>1.通过client可以提交用户编写的应用程序用户通过它将应</p>
+<p>用程序交到JobTracker端</p>
+<p>2.通过这些Client用户也可以通过它提供的一些接口去查</p>
+<p>看当前提交作业的运行状态</p>
+<p><strong>JobTracker（作业跟踪器）</strong></p>
+<blockquote>
+<p>负责资源的监控和作业的调度</p>
+</blockquote>
+<blockquote>
+<p>监控底层的其它的TaskTracker以及当前运行的Job的健康状况</p>
+</blockquote>
+<blockquote>
+<p>一旦探测到失败的情况就把这个任务转移到其它节点继续执行跟踪任务执行进度和资源使用量</p>
+</blockquote>
+<p><strong>TaskTracker（任务调度器）</strong></p>
+<p>执行具体的相关任务一般接收JobTracker发送过来的命令</p>
+<p>把一些自己的资源使用情况，以及任务的运行进度通过心跳的方式，也就是heartbeat发送给JobTracker</p>
+<p>以slot为资源调度单位<br><img src="https://img-blog.csdnimg.cn/20200403011107433.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt></p>
+<p>同一台机器上可以同时执行map任务和reduce任务。</p>
+<p>Hadoop MapReduce执行框架的组件和执行流程<br><img src="https://img-blog.csdnimg.cn/20200403011011708.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3FxXzQyMTEyNDQ4,size_16,color_FFFFFF,t_70" alt></p>
+<h3><span id="da-gai-liu-cheng">大概流程：</span><a href="#da-gai-liu-cheng" class="header-anchor">#</a></h3><p>每个TaskTracker节点将从HDFS分布式文件中读取所有处理的数据。Hadoop MapReduce框架提供了一个InputFormat对象负责具体以什么样的输入格式读取数据。然后数据会被分为很多个分片（Split），每个分片将交由一个Map对象处理。再进入Map之前，需要通过RecorderReader对象逐个从数据分片中读出数据记录、并转换为Key-value键值对，逐个输入到Map中处理。Map输出中间结果前，需要经过一个Combiner对象将该Map输出的相同主键下的所有键值对合并成一个键值对；map所输出的中间结果在进入Reduce之前，先通过中间的Partitioner对象进行数据分区，将数据发送到合适的Reduce节点上，避免不同Reduce节点上数据相关性，保证每个reduce节点可独立完成本地计算；在传入Reduce节点之前还会将所有键值对按照主键值进行排序。Reduce节点完成计算后，经过OutputFormat对指定输出数据的具体格式，最终将数据输出并写回到HDFS中。</p>
+<h3><span id="wen-jian-shu-ru-ge-shi-inputformat">文件输入格式InputFormat</span><a href="#wen-jian-shu-ru-ge-shi-inputformat" class="header-anchor">#</a></h3><p>InputFormat类是Hadoop MapReduce框架中的基础类之一</p>
+<p>定义了数据文件如何分割和读取</p>
+<p>InputFormat提供了以下一些功能</p>
+<p>1.选择文件或者其它对象，用来作为输入</p>
+<p>2.定义InputSplits，将一个文件分为不同任务，每一个IputSplits将单独作为一个Map的输入</p>
+<p>3.提供一个RecordReader，将InputSplit处理转换为若干输入记录</p>
+<p>4.有一个抽象的类FilelnputFormat，所有的输入格式类都从这个类继承其功能以及特性当启动一个Hadoop任务的时候，一个输入文件所在的目录被输入到FilelnputFormat对象中。Filelnputformat从这个目录中读取所有文件。然后FilelnputFormat将这些文件分割为多个InputSplits。</p>
+<p>5.通过在JobConf对象上设置JobConf.sethnputFormat设置文件输入的格式</p>
+<h3><span id="shu-ru-shu-ju-fen-kuai-inputsplits">输入数据分块InputSplits</span><a href="#shu-ru-shu-ju-fen-kuai-inputsplits" class="header-anchor">#</a></h3><p>输入数据分块InputSplits inputsplit定了输入到单个Map任务的输入数据</p>
+<p>一个MapReduce程序被统称为一个Job，可能有上百个任务构成</p>
+<p>InputSpilt将文件分为64MB的大小</p>
+<p>·配置文件hadoop-site xml中的mepred min.split.size控制这个大小</p>
+<p>mapred.tasktracker.map.taks.maximm用来控制某一个节点上所有map任务的最大数目</p>
+<h3><span id="shu-ju-ji-lu-du-ru-recordreader">数据记录读入RecordReader</span><a href="#shu-ju-ji-lu-du-ru-recordreader" class="header-anchor">#</a></h3><p>数据记录读入RecordReader inputsplit定义了一个数据分块，但是没有定义如何读取数据记录</p>
+<p>RecordReader实际上定义了如何将数据记录转化为一个key value对的详细方法，并将数据记录传给Mapper类</p>
+<p>TexthnputFormat提供了LineRecordReader读入一个文本行数据记录</p>
+<h3><span id="mapper">Mapper</span><a href="#mapper" class="header-anchor">#</a></h3><p>每一个Mapper类的实例生成了一个Java进程，负责处理某一个InputSplit上的数据有两个额外的参数OutputCollector以及Reporter，前者用来收集中间结果，后者用来获得环境参数以及设置当前执行的状态。</p>
+<p>现在的版本用MapperContext提供给每一个Mapper函数，用来提供上面两个对象的功能</p>
+<h3><span id="shuffle-jie-duan">shuffle阶段：</span><a href="#shuffle-jie-duan" class="header-anchor">#</a></h3><p>将map的输出作为reduce的输入的过程就是shuffle了，这个是mapreduce优化的重点地方。Shuffle一开始就是map阶段做输出操作，一般mapreduce计算的都是海量数据，map输出时候不可能把所有文件都放到内存操作，因此map写入磁盘的过程十分的复杂，更何况map输出时候要对结果进行排序，内存开销是很大的，map在做输出时候会在内存里开启一个环形内存缓冲区，这个缓冲区专门用来输出的，默认大小是100mb，并且在配置文件里为这个缓冲区设定了一个阀值，默认是0.80（这个大小和阀值都是可以在配置文件里进行配置的），同时map还会为输出操作启动一个守护线程，如果缓冲区的内存达到了阀值的80%时候，这个守护线程就会把内容写到磁盘上，这个过程叫spill，另外的20%内存可以继续写入要写进磁盘的数据，写入磁盘和写入内存操作是互不干扰的，如果缓存区被撑满了，那么map就会阻塞写入内存的操作，让写入磁盘操作完成后再继续执行写入内存操作，前面我讲到写入磁盘前会有个排序操作，这个是在写入磁盘操作时候进行，不是在写入内存时候进行的，如果我们定义了combiner函数，那么排序前还会执行combiner操作。每次spill操作也就是写入磁盘操作时候就会写一个溢出文件，也就是说在做map输出有几次spill就会产生多少个溢出文件，等map输出全部做完后，map会合并这些输出文件。这个过程里还会有一个Partitioner操作，对于这个操作很多人都很迷糊，其实Partitioner操作和map阶段的输入分片（Input split）很像，一个Partitioner对应一个reduce作业，如果我们mapreduce操作只有一个reduce操作，那么Partitioner就只有一个，如果我们有多个reduce操作，那么Partitioner对应的就会有多个，Partitioner因此就是reduce的输入分片，这个程序员可以编程控制，主要是根据实际key和value的值，根据实际业务类型或者为了更好的reduce负载均衡要求进行，这是提高reduce效率的一个关键所在。到了reduce阶段就是合并map输出文件了，Partitioner会找到对应的map输出文件，然后进行复制操作，复制操作时reduce会开启几个复制线程，这些线程默认个数是5个，程序员也可以在配置文件更改复制线程的个数，这个复制过程和map写入磁盘过程类似，也有阀值和内存大小，阀值一样可以在配置文件里配置，而内存大小是直接使用reduce的tasktracker的内存大小，复制时候reduce还会进行排序操作和合并文件操作，这些操作完了就会进行reduce计算了。</p>
+<h3><span id="reducer">Reducer</span><a href="#reducer" class="header-anchor">#</a></h3><p>做用户定义的Reduce操作</p>
+<p>接收到一个OutputCollector的</p>
+<p>类作为输出</p>
+<p>新版本的编程接口是Reducer.Context</p>
+<h3><span id="wen-jian-shu-chu-ge-shi-outputformat">文件输出格式OutputFormat</span><a href="#wen-jian-shu-chu-ge-shi-outputformat" class="header-anchor">#</a></h3><p>写入到HDFS的所有OutputFormat都继承自FileOutputFormat每一个Reducer都写一个文件到一个共同的输出目录，文件名是</p>
+<p>part-nnnnn，其中nnnn是与每一个reducer相关的一个号（partition id）</p>
+<p>FileOutputFormat.setOutputPath（）</p>
+<p>JobConf.setOutputFormat（）</p>
+<h2><span id="guan-yu-hdfs-block-he-mapreduce-split">关于HDFS block和MapReduce split</span><a href="#guan-yu-hdfs-block-he-mapreduce-split" class="header-anchor">#</a></h2><p>Block：HDFS中最小的数据存储单位，默认是164M；Split：MapReduce中最小的计算单元，默认与Block一一对应。两者的对应关系是任意的，用户可控制。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/BigData/" rel="tag"><i class="fa fa-tag"></i> BigData</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/08/vim/" rel="prev" title="vim使用">
+      <i class="fa fa-chevron-left"></i> vim使用
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/04/08/mysql_engine/" rel="next" title="Mysql各种存储引擎和物理文件结构的对比">
+      Mysql各种存储引擎和物理文件结构的对比 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#"><span class="nav-number">1.</span> <span class="nav-text">mapreduce基础知识</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">1.1.</span> <span class="nav-text">MapReduce编程模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">1.2.</span> <span class="nav-text">Google MapReduce并行处理的基本过程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.带宽优化：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.用数据分区解决数据相关性问题：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">1.3.</span> <span class="nav-text">MapReduce框架组成</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">1.4.</span> <span class="nav-text">数据存储与计算节点构架</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">1.5.</span> <span class="nav-text">体系结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.5.1.</span> <span class="nav-text">大概流程：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.5.2.</span> <span class="nav-text">文件输入格式InputFormat</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.5.3.</span> <span class="nav-text">输入数据分块InputSplits</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.5.4.</span> <span class="nav-text">数据记录读入RecordReader</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.5.5.</span> <span class="nav-text">Mapper</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.5.6.</span> <span class="nav-text">shuffle阶段：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.5.7.</span> <span class="nav-text">Reducer</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#"><span class="nav-number">1.5.8.</span> <span class="nav-text">文件输出格式OutputFormat</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#"><span class="nav-number">1.6.</span> <span class="nav-text">关于HDFS block和MapReduce split</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="pengwengao"
+      src="/images/avatar.gif">
+  <p class="site-author-name" itemprop="name">pengwengao</p>
+  <div class="site-description" itemprop="description">个人学习网站</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">33</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/hearting" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;hearting" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:1077453259@qq.com" title="E-Mail → mailto:1077453259@qq.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/yourname" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;yourname" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="http://www.zhihu.com/people/mr%E5%BD%AD44" title="知乎 → http:&#x2F;&#x2F;www.zhihu.com&#x2F;people&#x2F;mr彭44" rel="noopener" target="_blank"><i class="fab fa-zhihu fa-fw"></i>知乎</a>
+      </span>
+  </div>
+
+
+  <div class="links-of-blogroll motion-element">
+    <div class="links-of-blogroll-title"><i class="fa fa-link fa-fw"></i>
+      Links
+    </div>
+    <ul class="links-of-blogroll-list">
+        <li class="links-of-blogroll-item">
+          <a href="https://blog.csdn.net/qq_42112448" title="https:&#x2F;&#x2F;blog.csdn.net&#x2F;qq_42112448" rel="noopener" target="_blank">CSDN</a>
+        </li>
+        <li class="links-of-blogroll-item">
+          <a href="https://gitee.com/pwg123_admin" title="https:&#x2F;&#x2F;gitee.com&#x2F;pwg123_admin" rel="noopener" target="_blank">Gitee</a>
+        </li>
+    </ul>
+  </div>
+
+      </div>
+        <div class="back-to-top motion-element">
+          <i class="fa fa-arrow-up"></i>
+          <span>0%</span>
+        </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">pengwengao</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-chart-area"></i>
+    </span>
+      <span class="post-meta-item-text">站点总字数：</span>
+    <span title="站点总字数">135k</span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item-icon">
+      <i class="fa fa-coffee"></i>
+    </span>
+      <span class="post-meta-item-text">站点阅读时长 &asymp;</span>
+    <span title="站点阅读时长">2:03</span>
+</div>
+
+<!--
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+-->
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script size="300" alpha="0.6" zIndex="-1" src="/lib/canvas-ribbon/canvas-ribbon.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+<script src="/js/bookmark.js"></script>
+
+
+  <script defer src="/lib/three/three.min.js"></script>
+    <script defer src="/lib/three/three-waves.min.js"></script>
+    <script defer src="/lib/three/canvas_lines.min.js"></script>
+    <script defer src="/lib/three/canvas_sphere.min.js"></script>
+
+
+  
+
+
+
+
+  
+<script src="/js/local-search.js"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+   
+   
+   
+   
+   <link rel="stylesheet" href="https://imsun.github.io/gitment/style/default.css">
+   <script src="https://imsun.github.io/gitment/dist/gitment.browser.js"></script>
+   
+       <script type="text/javascript">
+           function ShowGitment(){
+               document.getElementById("gitment-display-button").style.display = "none";
+               document.getElementById("gitment-container").style.display = "block";
+               var gitment = new Gitment({
+                   id: document.location.href, 
+                   owner: 'pwg123_admin',
+                   repo: 'blog',
+                   oauth: {
+                       client_id: '1c9840ee33161d96334a548f3179d63090f35624c3f746583e9612f72f80d9fd',
+                       client_secret: 'eb467f87bfca430e97709040d83fdde9ea0bb8513ae28ff57e8e4d0e2abccccd',
+                   }});
+               gitment.render('gitment-container');
+           }
+       </script>
+   
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('https://cdn.jsdelivr.net/npm/valine@1.4.14/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail,link';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : 'CEyBRxfkOzGDbJCqTlKOPUuQ-gzGzoHsz',
+      appKey     : 'c4KiJ36SEUjjMQbeKpfESY5j',
+      placeholder: "欢迎畅所欲言",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : false,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : false,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+
+</body>
+</html>
+  <!-- 页面点击小红心 -->
+  <script type="text/javascript" src="/js/click.js"></script>
